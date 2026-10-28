@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: portal-nav(${navActive})}"></header>
+<main class="app-main">
+    <div class="page-header">
+        <div>
+            <div class="eyebrow"><a th:href="@{/portal}">Events</a><th:block th:if="${event}"> / <a th:href="@{/portal/events/{id}(id=${event.id})}" th:text="${event.coupleNames}"></a></th:block></div>
+            <h1 th:text="${pageTitle}">Event</h1>
+        </div>
+    </div>
+
+    <form th:object="${form}" method="post" enctype="multipart/form-data" class="card"
+          th:action="${event == null} ? @{/portal/events} : @{/portal/events/{id}(id=${event.id})}">
+
+        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-error" role="alert" style="margin:20px 20px 0">
+            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</p>
+        </div>
+
+        <section class="form-section">
+            <header>
+                <h2>Couple &amp; occasion</h2>
+                <p>Shown in large type at the top of every invitation.</p>
+            </header>
+            <div class="form-grid two">
+                <div class="field span-2" th:classappend="${#fields.hasErrors('coupleNames')} ? 'has-error'">
+                    <label for="coupleNames">Couple names</label>
+                    <input th:field="*{coupleNames}" required maxlength="200" placeholder="Anjali &amp; Rahul">
+                    <span class="error" th:errors="*{coupleNames}"></span>
+                </div>
+                <div class="field" th:classappend="${#fields.hasErrors('eventType')} ? 'has-error'">
+                    <label for="eventType">Event type</label>
+                    <select th:field="*{eventType}" required>
+                        <option th:each="t : ${eventTypes}" th:value="${t}" th:text="|${t.labelEn} · ${t.labelMl}|">Wedding</option>
+                    </select>
+                    <span class="error" th:errors="*{eventType}"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <header>
+                <h2>When &amp; where</h2>
+                <p>Use the venue's local time. The map link adds a directions button.</p>
+            </header>
+            <div class="form-grid two">
+                <div class="field" th:classappend="${#fields.hasErrors('startsAt')} ? 'has-error'">
+                    <label for="startsAt">Date and time</label>
+                    <input type="datetime-local" th:field="*{startsAt}" required>
+                    <span class="error" th:errors="*{startsAt}"></span>
+                </div>
+                <div class="field" th:classappend="${#fields.hasErrors('venue')} ? 'has-error'">
+                    <label for="venue">Venue</label>
+                    <input th:field="*{venue}" required maxlength="300" placeholder="St. Mary's Church, Kollam">
+                    <span class="error" th:errors="*{venue}"></span>
+                </div>
+                <div class="field span-2" th:classappend="${#fields.hasErrors('mapsUrl')} ? 'has-error'">
+                    <label for="mapsUrl">Google Maps link <span class="muted">(optional)</span></label>
+                    <input type="url" th:field="*{mapsUrl}" maxlength="1000" placeholder="https://maps.app.goo.gl/…">
+                    <span class="error" th:errors="*{mapsUrl}"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <header>
+                <h2>Card design</h2>
+                <p>The animated design guests see when they open their link.</p>
+            </header>
+            <div class="field">
+                <div class="template-options" role="radiogroup" aria-label="Template">
+                    <label th:each="t : ${templates}" class="template-option">
+                        <input type="radio" th:field="*{template}" th:value="${t}" required>
+                        <div class="swatch" th:classappend="${t.cssClass()}">A &amp; R</div>
+                        <div class="meta"><strong th:text="${t.title}">Marigold</strong><span th:text="${t.description}">desc</span></div>
+                    </label>
+                </div>
+                <span class="error" th:errors="*{template}"></span>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <header>
+                <h2>Messages</h2>
+                <p>Printed on the card and included in each guest's WhatsApp message.</p>
+            </header>
+            <div class="form-grid">
+                <div class="field" th:classappend="${#fields.hasErrors('messageEn')} ? 'has-error'">
+                    <label for="messageEn">English</label>
+                    <textarea th:field="*{messageEn}" rows="4" required maxlength="2000" placeholder="With the blessings of our families, we joyfully invite you…"></textarea>
+                    <span class="error" th:errors="*{messageEn}"></span>
+                </div>
+                <div class="field" th:classappend="${#fields.hasErrors('messageMl')} ? 'has-error'">
+                    <label for="messageMl">Malayalam</label>
+                    <textarea th:field="*{messageMl}" rows="4" required maxlength="2000" lang="ml" placeholder="ഞങ്ങളുടെ വിവാഹത്തിലേക്ക്…"></textarea>
+                    <span class="error" th:errors="*{messageMl}"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <header>
+                <h2>Photo &amp; letter</h2>
+                <p>The photo appears on the card. The letter is the full printed invitation guests can open.</p>
+            </header>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="photo">Couple photo <span class="muted">(optional)</span></label>
+                    <div class="overview" th:if="${hasPhoto}">
+                        <img class="photo" alt="Current photo" th:src="@{/portal/events/{id}/photo(id=${event.id})}">
+                    </div>
+                    <input id="photo" type="file" name="photo" accept="image/jpeg,image/png,image/webp">
+                    <span class="hint">JPEG, PNG or WebP, up to 1 MB.<th:block th:if="${hasPhoto}"> Leave empty to keep the current photo.</th:block></span>
+                </div>
+                <div class="field">
+                    <label for="letter">Invitation letter <span class="muted">(optional)</span></label>
+                    <div th:if="${letterPages != null and !letterPages.isEmpty()}" class="alert alert-info">
+                        Current letter:
+                        <th:block th:text="${letterPages.getFirst().pdf} ? |PDF (${letterPages.getFirst().filename})| : |${letterPages.size()} page image(s)|"></th:block>.
+                        Uploading new files replaces it.
+                        <label class="checkbox" style="margin-top:8px"><input type="checkbox" name="removeLetter" value="true"> Remove the letter</label>
+                    </div>
+                    <input id="letter" type="file" name="letter" multiple accept="application/pdf,image/jpeg,image/png,image/webp">
+                    <span class="hint">One PDF, or up to 20 page images in order. 10 MB in total.</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="form-footer">
+            <a class="btn btn-ghost" th:href="${event == null} ? @{/portal} : @{/portal/events/{id}(id=${event.id})}">Cancel</a>
+            <button type="submit" class="btn btn-primary" th:text="${event == null} ? 'Create event' : 'Save changes'">Save</button>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

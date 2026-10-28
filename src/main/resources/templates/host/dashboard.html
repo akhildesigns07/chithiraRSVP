@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head(${event.coupleNames})}"></head>
+<body>
+<header class="host-hero">
+    <div class="inner">
+        <p class="eyebrow" th:text="|${event.eventType.labelEn} · Guest dashboard|">Wedding · Guest dashboard</p>
+        <h1 th:text="${event.coupleNames}">Anjali &amp; Rahul</h1>
+        <div class="meta">
+            <span><svg th:replace="~{fragments/icons :: calendar}"></svg><th:block th:text="${#temporals.format(event.startsAt, 'EEEE, d MMMM yyyy · h:mm a')}"></th:block></span>
+            <span><svg th:replace="~{fragments/icons :: pin}"></svg><th:block th:text="${event.venue}"></th:block></span>
+        </div>
+    </div>
+</header>
+
+<main class="app-main host-main">
+    <section class="card" style="margin-bottom:20px">
+        <div class="card-body progress-card">
+            <div class="row">
+                <div>
+                    <h2>Invitations sent</h2>
+                    <p class="muted small" th:text="|${totals.sent} of ${totals.invited} guests have been sent their invitation|"></p>
+                </div>
+                <div class="actions">
+                    <a class="btn btn-whatsapp" th:href="@{/h/{t}/send(t=${event.hostToken})}"><svg th:replace="~{fragments/icons :: whatsapp}"></svg>Send invites on WhatsApp</a>
+                    <a class="btn btn-secondary" th:href="@{/h/{t}/guests.csv(t=${event.hostToken})}"><svg th:replace="~{fragments/icons :: download}"></svg>Download CSV</a>
+                </div>
+            </div>
+            <div class="progress" role="progressbar" th:attr="aria-valuenow=${totals.sent},aria-valuemax=${totals.invited}" aria-valuemin="0">
+                <span th:style="|width: ${totals.invited == 0 ? 0 : totals.sent * 100 / totals.invited}%|"></span>
+            </div>
+        </div>
+    </section>
+
+    <div class="stats">
+        <div class="stat"><strong th:text="${totals.invited}">0</strong><span>Invited</span></div>
+        <div class="stat"><strong th:text="${totals.sent}">0</strong><span>Sent</span></div>
+        <div class="stat"><strong th:text="${totals.attending}">0</strong><span>Attending</span></div>
+        <div class="stat accent"><strong th:text="${totals.headcount}">0</strong><span>Total headcount</span></div>
+        <div class="stat"><strong th:text="${totals.notAttending}">0</strong><span>Not attending</span></div>
+        <div class="stat"><strong th:text="${totals.pending}">0</strong><span>No reply yet</span></div>
+    </div>
+
+    <section class="card">
+        <div class="card-header"><div><h2>Guest list</h2><p>Replies appear here as guests respond.</p></div></div>
+        <div th:if="${guests.isEmpty()}" class="empty">
+            <div class="icon"><svg th:replace="~{fragments/icons :: users}"></svg></div>
+            <h2>No guests yet</h2>
+            <p th:text="|${shop.name} will add your guest list.|"></p>
+        </div>
+        <div th:unless="${guests.isEmpty()}" class="table-wrap">
+            <table class="table stack">
+                <thead><tr><th>Name</th><th>Invitation</th><th>RSVP</th><th class="num">Headcount</th></tr></thead>
+                <tbody>
+                <tr th:each="g : ${guests}">
+                    <td class="name" th:text="${g.name}">Name</td>
+                    <td data-label="Invitation"><span th:replace="~{fragments/status :: sent(${g})}"></span></td>
+                    <td data-label="RSVP"><span th:replace="~{fragments/status :: rsvp(${g})}"></span></td>
+                    <td data-label="Headcount" class="num" th:text="${g.headcount} ?: '—'">—</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<footer class="app-footer">
+    <span th:text="|Digital invitations by ${shop.name}, ${shop.address}|"></span>
+    <a th:href="${shop.phoneHref()}" th:text="${shop.phoneDisplay()}">phone</a>
+</footer>
+</body>
+</html>

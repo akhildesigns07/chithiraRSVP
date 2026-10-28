@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<span th:fragment="sent(g)" class="badge" th:classappend="${g.sent} ? 'success'" th:text="${g.sent} ? 'Sent' : 'Not sent'">Not sent</span>
+<span th:fragment="rsvp(g)" class="badge"
+      th:classappend="${g.rsvpStatus.name() == 'ATTENDING'} ? 'success' : (${g.rsvpStatus.name() == 'NOT_ATTENDING'} ? 'danger' : 'warn')"
+      th:text="${g.rsvpStatus.name() == 'ATTENDING'} ? |Attending · ${g.headcount}| : (${g.rsvpStatus.name() == 'NOT_ATTENDING'} ? 'Not attending' : 'Awaiting reply')">Awaiting reply</span>
+</body>
+</html>

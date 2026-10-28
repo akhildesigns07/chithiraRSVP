@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: chithira-rsvp
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/rsvp}
+    username: ${DB_USERNAME:rsvp}
+    password: ${DB_PASSWORD:rsvp}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      # The photo (1 MB) and letter (10 MB) limits are enforced in code so staff get a friendly error;
+      # this is only the hard ceiling for the whole request.
+      max-file-size: 11MB
+      max-request-size: 15MB
+  thymeleaf:
+    cache: true
+
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+
+app:
+  # Public URL used to build invite links in WhatsApp messages, e.g. https://invites.example.com
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  admin:
+    username: ${ADMIN_USERNAME}
+    password: ${ADMIN_PASSWORD}
+  shop:
+    name: ${SHOP_NAME:Chithira Printer}
+    address: ${SHOP_ADDRESS:TD Complex, Chamakkada, Kollam}
+    phone: ${SHOP_PHONE:9995360201}
+    whatsapp: ${SHOP_WHATSAPP:9995360201}
+    email: ${SHOP_EMAIL:chithiraprinterskollam@gmail.com}

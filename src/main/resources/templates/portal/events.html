@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Events')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: portal-nav(${navActive})}"></header>
+<main class="app-main">
+    <div class="page-header">
+        <div>
+            <h1>Events</h1>
+            <p th:text="${events.isEmpty()} ? 'Create your first event to start sending invitations.' : |${events.size()} event(s)|">Events</p>
+        </div>
+        <a th:href="@{/portal/events/new}" class="btn btn-primary"><svg th:replace="~{fragments/icons :: plus}"></svg>New event</a>
+    </div>
+
+    <div th:if="${events.isEmpty()}" class="card empty">
+        <div class="icon"><svg th:replace="~{fragments/icons :: heart}"></svg></div>
+        <h2>No events yet</h2>
+        <p>Add the couple, date, venue and messages, then paste the guest list.</p>
+        <a th:href="@{/portal/events/new}" class="btn btn-primary"><svg th:replace="~{fragments/icons :: plus}"></svg>Create event</a>
+    </div>
+
+    <div th:unless="${events.isEmpty()}" class="event-grid">
+        <a th:each="e : ${events}" th:with="t=${totals.get(e.id)}" class="card event-card" th:href="@{/portal/events/{id}(id=${e.id})}">
+            <div class="band" th:classappend="${e.template.cssClass()}"></div>
+            <div class="card-body">
+                <div><span class="badge brand plain" th:text="${e.eventType.labelEn}">Wedding</span></div>
+                <h2 th:text="${e.coupleNames}">Names</h2>
+                <div class="when">
+                    <span th:text="${#temporals.format(e.startsAt, 'EEE, d MMM yyyy · h:mm a')}">date</span>
+                    <span th:text="${e.venue}">venue</span>
+                </div>
+                <div class="mini-stats">
+                    <div><strong th:text="${t.invited}">0</strong>Guests</div>
+                    <div><strong th:text="${t.sent}">0</strong>Sent</div>
+                    <div><strong th:text="${t.attending}">0</strong>Attending</div>
+                    <div><strong th:text="${t.headcount}">0</strong>Headcount</div>
+                </div>
+            </div>
+        </a>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

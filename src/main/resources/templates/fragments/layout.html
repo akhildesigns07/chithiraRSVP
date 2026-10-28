@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title th:text="|${title} · ${shop.name}|">Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,600;1,500;1,600&family=Noto+Sans+Malayalam:wght@400;600&display=swap">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:src="@{/webjars/htmx.org/2.0.4/dist/htmx.min.js}" defer></script>
+    <script th:src="@{/js/portal.js}" defer></script>
+</head>
+<body>
+
+<a th:fragment="brand(subtitle)" class="brand" th:href="@{/}">
+    <span class="brand-mark" aria-hidden="true">C</span>
+    <span class="brand-text"><strong th:text="${shop.name}">Chithira Printer</strong><span th:text="${subtitle}">Invitation portal</span></span>
+</a>
+
+<header th:fragment="portal-nav(active)" class="app-header">
+    <div class="inner">
+        <a class="brand" th:href="@{/portal}">
+            <span class="brand-mark" aria-hidden="true">C</span>
+            <span class="brand-text"><strong th:text="${shop.name}">Chithira Printer</strong><span>Invitation portal</span></span>
+        </a>
+        <nav class="app-nav" aria-label="Portal">
+            <a th:href="@{/portal}" th:classappend="${active == 'events'} ? 'active'">Events</a>
+            <a th:href="@{/portal/events/new}" th:classappend="${active == 'new'} ? 'active'">New event</a>
+            <form th:action="@{/portal/logout}" method="post"><button type="submit">Log out</button></form>
+        </nav>
+    </div>
+</header>
+
+<footer th:fragment="footer" class="app-footer">
+    <span th:text="|© ${#temporals.year(#temporals.createNow())} ${shop.name}, ${shop.address}|"></span>
+    <a th:href="@{/}">Back to website</a>
+</footer>
+
+</body>
+</html>

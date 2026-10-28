@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title th:text="|Invitation letter — ${event.coupleNames}|">Invitation letter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;600;700&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap">
+    <link rel="stylesheet" th:href="@{/css/invite.css}">
+</head>
+<body th:class="|invite letter-page ${event.template.cssClass()}|">
+<header class="letter-bar">
+    <a class="back" th:href="@{/i/{t}(t=${guest.token})}">← Back</a>
+    <div class="title">
+        <strong th:text="${event.coupleNames}">Anjali &amp; Rahul</strong>
+        <span>Invitation letter · <span lang="ml">ക്ഷണക്കത്ത്</span></span>
+    </div>
+    <span class="spacer" aria-hidden="true"></span>
+</header>
+
+<main class="letter-body">
+    <th:block th:if="${isPdf}">
+        <div class="letter-actions">
+            <a class="btn" th:href="@{/i/{t}/letter/1(t=${guest.token})}" target="_blank" rel="noopener">Open full screen</a>
+            <a class="btn btn-outline" th:href="@{/i/{t}/letter/1(t=${guest.token}, download=true)}">Download PDF</a>
+        </div>
+        <object class="pdf-frame" type="application/pdf" th:data="@{/i/{t}/letter/1(t=${guest.token})}">
+            <div class="pdf-fallback">
+                <p>Your phone can't show the letter on this page.<br><span lang="ml">താഴെയുള്ള ബട്ടൺ ഉപയോഗിച്ച് ക്ഷണക്കത്ത് തുറക്കുക.</span></p>
+                <a class="btn" th:href="@{/i/{t}/letter/1(t=${guest.token})}" target="_blank" rel="noopener">Open the letter</a>
+            </div>
+        </object>
+    </th:block>
+
+    <ol th:unless="${isPdf}" class="letter-pages">
+        <li th:each="p : ${pages}">
+            <figure>
+                <img th:src="@{/i/{t}/letter/{n}(t=${guest.token}, n=${p.pageNo})}" th:alt="|Invitation letter, page ${p.pageNo}|"
+                     th:attr="loading=${p.pageNo > 1} ? 'lazy' : null">
+                <figcaption>
+                    <span th:text="${pages.size() > 1} ? |Page ${p.pageNo} of ${pages.size()}| : ''"></span>
+                    <a th:href="@{/i/{t}/letter/{n}(t=${guest.token}, n=${p.pageNo}, download=true)}">Download</a>
+                </figcaption>
+            </figure>
+        </li>
+    </ol>
+</main>
+</body>
+</html>

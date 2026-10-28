@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head(${event.coupleNames})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: portal-nav(${navActive})}"></header>
+<main class="app-main">
+    <div class="page-header">
+        <div>
+            <div class="eyebrow"><a th:href="@{/portal}">Events</a> / <span th:text="${event.eventType.labelEn}">Wedding</span></div>
+            <h1 th:text="${event.coupleNames}">Names</h1>
+            <p th:text="|${#temporals.format(event.startsAt, 'EEEE, d MMMM yyyy · h:mm a')} · ${event.venue}|"></p>
+        </div>
+        <div class="actions">
+            <a class="btn btn-secondary" th:with="hostUrl=${@links.host(event)}" th:href="${hostUrl}" target="_blank" rel="noopener"><svg th:replace="~{fragments/icons :: external}"></svg>Host dashboard</a>
+            <a class="btn btn-primary" th:href="@{/portal/events/{id}/edit(id=${event.id})}"><svg th:replace="~{fragments/icons :: edit}"></svg>Edit event</a>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><strong th:text="${totals.invited}">0</strong><span>Guests</span></div>
+        <div class="stat"><strong th:text="${totals.sent}">0</strong><span>Invites sent</span></div>
+        <div class="stat"><strong th:text="${totals.attending}">0</strong><span>Attending</span></div>
+        <div class="stat accent"><strong th:text="${totals.headcount}">0</strong><span>Total headcount</span></div>
+        <div class="stat"><strong th:text="${totals.notAttending}">0</strong><span>Not attending</span></div>
+        <div class="stat"><strong th:text="${totals.pending}">0</strong><span>Awaiting reply</span></div>
+    </div>
+
+    <div class="detail-grid">
+        <section class="card">
+            <div class="card-header"><h2>Invitation details</h2><span class="badge plain" th:text="${event.template.title}">Marigold</span></div>
+            <div class="card-body" style="display:grid;gap:20px">
+                <div class="overview">
+                    <img th:if="${hasPhoto}" class="photo" alt="Couple photo" th:src="@{/portal/events/{id}/photo(id=${event.id})}">
+                    <div th:unless="${hasPhoto}" class="photo placeholder">No photo</div>
+                    <dl class="facts">
+                        <dt>Occasion</dt><dd th:text="|${event.eventType.labelEn} · ${event.eventType.labelMl}|"></dd>
+                        <dt>Date</dt><dd th:text="${#temporals.format(event.startsAt, 'EEEE, d MMMM yyyy, h:mm a')}"></dd>
+                        <dt>Venue</dt><dd th:text="${event.venue}"></dd>
+                        <dt>Map</dt><dd><a th:if="${event.mapsUrl}" th:href="${event.mapsUrl}" target="_blank" rel="noopener">Open in Google Maps</a><span th:unless="${event.mapsUrl}" class="muted">Not added</span></dd>
+                    </dl>
+                </div>
+                <div class="form-grid two">
+                    <div><h3 style="margin-bottom:8px">English message</h3><div class="message-preview" th:text="${event.messageEn}"></div></div>
+                    <div><h3 style="margin-bottom:8px">Malayalam message</h3><div class="message-preview" lang="ml" th:text="${event.messageMl}"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="side-stack">
+            <section class="card">
+                <div class="card-header"><div><h2>Share with the host</h2><p>They can track replies and send invites from this link.</p></div></div>
+                <div class="card-body">
+                    <div class="copy-field">
+                        <input id="host-link" readonly th:value="${@links.host(event)}" aria-label="Host dashboard link">
+                        <button type="button" class="btn btn-secondary btn-sm" data-copy="#host-link">Copy</button>
+                    </div>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-header"><div><h2>Invitation letter</h2><p>Guests can open the full printed letter from their card.</p></div></div>
+                <div class="card-body">
+                    <p th:if="${letterPages.isEmpty()}" class="muted">No letter uploaded. <a th:href="@{/portal/events/{id}/edit(id=${event.id})}">Upload one</a></p>
+                    <a th:if="${!letterPages.isEmpty() and letterPages.getFirst().pdf}" class="file-chip" target="_blank" rel="noopener"
+                       th:href="@{/portal/events/{id}/letter/1(id=${event.id})}">
+                        <svg th:replace="~{fragments/icons :: file}"></svg><span th:text="${letterPages.getFirst().filename}">letter.pdf</span>
+                    </a>
+                    <div th:if="${!letterPages.isEmpty() and !letterPages.getFirst().pdf}" class="letter-thumbs">
+                        <a th:each="p : ${letterPages}" target="_blank" rel="noopener" th:href="@{/portal/events/{id}/letter/{n}(id=${event.id}, n=${p.pageNo})}">
+                            <img th:src="@{/portal/events/{id}/letter/{n}(id=${event.id}, n=${p.pageNo})}" th:alt="|Page ${p.pageNo}|" loading="lazy">
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <section id="guests" th:fragment="guests" class="card">
+        <div class="card-header">
+            <div><h2>Guests <span class="muted" th:text="|(${guests.size()})|">(0)</span></h2><p>Each guest gets a private invitation link.</p></div>
+        </div>
+
+        <div class="card-body" style="border-bottom:1px solid var(--line)">
+            <form th:action="@{/portal/events/{id}/guests(id=${event.id})}" method="post"
+                  th:attr="hx-post=@{/portal/events/{id}/guests(id=${event.id})}"
+                  hx-target="#guests" hx-swap="outerHTML" class="form-grid">
+                <div class="field">
+                    <label for="guest-paste">Add guests</label>
+                    <textarea id="guest-paste" name="guests" rows="5" required th:text="${pasteText}"
+                              placeholder="Anil Kumar, 98765 43210&#10;Fathima, +971 50 123 4567"></textarea>
+                    <span class="hint">One guest per line as <strong>Name, phone</strong>. Indian and UAE mobile numbers.</span>
+                </div>
+                <div th:if="${addedCount != null and addedCount > 0}" class="alert alert-success" role="status" th:text="|Added ${addedCount} guest(s).|"></div>
+                <div th:if="${pasteErrors != null and !pasteErrors.isEmpty()}" class="alert alert-error" role="alert">
+                    <strong>Nothing was added.</strong> Fix these lines and try again:
+                    <ul><li th:each="err : ${pasteErrors}" th:text="|Line ${err.lineNumber()}: ${err.line()} — ${err.message()}|"></li></ul>
+                </div>
+                <div><button type="submit" class="btn btn-primary"><svg th:replace="~{fragments/icons :: plus}"></svg>Add guests</button></div>
+            </form>
+        </div>
+
+        <div th:if="${guests.isEmpty()}" class="empty">
+            <div class="icon"><svg th:replace="~{fragments/icons :: users}"></svg></div>
+            <h2>No guests yet</h2>
+            <p>Paste the guest list above to create invitation links.</p>
+        </div>
+
+        <div th:unless="${guests.isEmpty()}" class="table-wrap">
+            <table class="table stack">
+                <thead><tr><th>Name</th><th>Phone</th><th>Invite</th><th>RSVP</th><th>Invitation link</th></tr></thead>
+                <tbody>
+                <tr th:each="g : ${guests}" th:with="inviteUrl=${@links.invite(g)}">
+                    <td class="name" th:text="${g.name}">Name</td>
+                    <td data-label="Phone" th:text="${g.phoneDisplay}">phone</td>
+                    <td data-label="Invite"><span th:replace="~{fragments/status :: sent(${g})}"></span></td>
+                    <td data-label="RSVP"><span th:replace="~{fragments/status :: rsvp(${g})}"></span></td>
+                    <td data-label="Link">
+                        <div class="copy-field">
+                            <input th:id="|invite-${g.id}|" readonly th:value="${inviteUrl}" th:aria-label="|Invitation link for ${g.name}|">
+                            <button type="button" class="btn btn-secondary btn-sm" th:attr="data-copy=|#invite-${g.id}|">Copy</button>
+                            <a class="btn btn-ghost btn-sm" th:href="${inviteUrl}" target="_blank" rel="noopener" title="Preview">Open</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

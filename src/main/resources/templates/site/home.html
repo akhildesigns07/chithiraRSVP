@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="|${shop.name} — Wedding cards &amp; digital invitations, Kollam|">Chithira Printer</title>
+    <meta name="description" th:content="|${shop.name}, ${shop.address}. Printed wedding cards and animated WhatsApp invitations with online RSVP.|">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Noto+Sans+Malayalam:wght@400;600&display=swap">
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container inner">
+        <a class="brand" th:href="@{/}">
+            <span class="brand-mark" aria-hidden="true">C</span>
+            <span class="brand-name" th:text="${shop.name}">Chithira Printer</span>
+        </a>
+        <nav class="site-nav" aria-label="Main">
+            <a href="#services">Services</a>
+            <a href="#digital">Digital invitations</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <a class="btn btn-outline btn-sm" th:href="@{/portal}">Staff portal</a>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-copy">
+                <p class="eyebrow" th:text="|${shop.address}|">Chamakkada, Kollam</p>
+                <h1>Invitations as beautiful as your celebration.</h1>
+                <p class="hero-ml" lang="ml">നിങ്ങളുടെ ആഘോഷത്തിന് മനോഹരമായ ക്ഷണക്കത്തുകൾ</p>
+                <p class="lead">Elegant printed wedding cards, plus animated invitations your guests open on WhatsApp, each with their own name and a one-tap RSVP.</p>
+                <div class="cta-row">
+                    <a class="btn btn-whatsapp" th:href="${shop.whatsappHref()}" target="_blank" rel="noopener">
+                        <svg th:replace="~{fragments/icons :: whatsapp}"></svg>Chat on WhatsApp
+                    </a>
+                    <a class="btn btn-light" th:href="${shop.phoneHref()}">
+                        <svg th:replace="~{fragments/icons :: phone}"></svg><span th:text="${shop.phoneDisplay()}">+91 99953 60201</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-visual" aria-hidden="true">
+                <div class="phone">
+                    <div class="phone-screen tpl-marigold">
+                        <span class="petal" style="left:12%;animation-delay:-1s"></span>
+                        <span class="petal" style="left:38%;animation-delay:-4s;animation-duration:9s"></span>
+                        <span class="petal" style="left:66%;animation-delay:-2.5s"></span>
+                        <span class="petal" style="left:84%;animation-delay:-6s;animation-duration:10s"></span>
+                        <div class="mini-card">
+                            <p class="mini-dear">Dear Anil,</p>
+                            <p class="mini-type">Wedding · <span lang="ml">വിവാഹം</span></p>
+                            <p class="mini-names">Anjali &amp; Rahul</p>
+                            <p class="mini-msg">We joyfully invite you to celebrate our wedding.</p>
+                            <p class="mini-date">Sunday, 14 February<br><strong>10:30 AM</strong></p>
+                            <span class="mini-btn">Will you attend?</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="float-chip chip-1"><svg th:replace="~{fragments/icons :: check}"></svg>Anil · Attending (3)</div>
+                <div class="float-chip chip-2"><svg th:replace="~{fragments/icons :: whatsapp}"></svg>Sent on WhatsApp</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="section">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">What we do</p>
+                <h2>Printed with care. Delivered beautifully.</h2>
+            </div>
+            <div class="feature-grid">
+                <article class="feature">
+                    <div class="feature-icon"><svg th:replace="~{fragments/icons :: printer}"></svg></div>
+                    <h3>Printed wedding cards</h3>
+                    <p>Traditional and modern invitation letters, designed and printed at our Chamakkada shop.</p>
+                </article>
+                <article class="feature">
+                    <div class="feature-icon"><svg th:replace="~{fragments/icons :: sparkles}"></svg></div>
+                    <h3>Animated WhatsApp invitations</h3>
+                    <p>A personal animated card for every guest in English and Malayalam, with a map button and the full invitation letter.</p>
+                </article>
+                <article class="feature">
+                    <div class="feature-icon"><svg th:replace="~{fragments/icons :: chart}"></svg></div>
+                    <h3>RSVP &amp; guest tracking</h3>
+                    <p>Guests reply in one tap. You see who is coming and the total headcount live, and can download the list.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="digital" class="section section-tint">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Digital invitations</p>
+                <h2>How it works</h2>
+            </div>
+            <ol class="steps">
+                <li><span class="step-no">1</span><h3>Share your details</h3><p>Names, date, venue, a photo and your guest list with phone numbers.</p></li>
+                <li><span class="step-no">2</span><h3>We create your card</h3><p>Choose a design. We prepare a personal invitation link for every guest.</p></li>
+                <li><span class="step-no">3</span><h3>Send on WhatsApp</h3><p>Send each invitation from your own phone with a single tap per guest.</p></li>
+                <li><span class="step-no">4</span><h3>Track replies</h3><p>Follow RSVPs and headcount on your private dashboard as they arrive.</p></li>
+            </ol>
+
+            <div class="designs">
+                <figure class="design" th:each="t : ${templates}">
+                    <div class="phone phone-sm">
+                        <div class="phone-screen" th:classappend="${t.cssClass()}">
+                            <span th:if="${t.name() == 'MARIGOLD'}" class="petal" style="left:20%;animation-delay:-2s"></span>
+                            <span th:if="${t.name() == 'MARIGOLD'}" class="petal" style="left:70%;animation-delay:-5s"></span>
+                            <span th:if="${t.name() == 'MOONLIGHT'}" class="star" style="left:15%;top:12%"></span>
+                            <span th:if="${t.name() == 'MOONLIGHT'}" class="star" style="left:80%;top:20%;animation-delay:-1s"></span>
+                            <span th:if="${t.name() == 'MOONLIGHT'}" class="star" style="left:30%;top:85%;animation-delay:-2s"></span>
+                            <span th:if="${t.name() == 'MOONLIGHT'}" class="star" style="left:72%;top:78%;animation-delay:-.5s"></span>
+                            <div class="mini-card">
+                                <p class="mini-type">Engagement</p>
+                                <p class="mini-names">Meera &amp; Arjun</p>
+                                <p class="mini-date">Saturday, 9 January<br><strong>6:00 PM</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <figcaption><strong th:text="${t.title}">Marigold</strong><span th:text="${t.description}">desc</span></figcaption>
+                </figure>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <div class="container contact-grid">
+            <div>
+                <p class="eyebrow">Visit or call</p>
+                <h2>Let's plan your invitations</h2>
+                <p class="lead">Drop by the shop with your ideas, or message us on WhatsApp and we will get back to you.</p>
+                <div class="cta-row">
+                    <a class="btn btn-whatsapp" th:href="${shop.whatsappHref()}" target="_blank" rel="noopener"><svg th:replace="~{fragments/icons :: whatsapp}"></svg>WhatsApp us</a>
+                    <a class="btn btn-light" th:href="${shop.mapsHref()}" target="_blank" rel="noopener"><svg th:replace="~{fragments/icons :: pin}"></svg>Get directions</a>
+                </div>
+            </div>
+            <address class="contact-card">
+                <div class="contact-row">
+                    <span class="contact-icon"><svg th:replace="~{fragments/icons :: pin}"></svg></span>
+                    <div><span class="label">Address</span><strong th:text="${shop.name}">Chithira Printer</strong><span th:text="${shop.address}">TD Complex, Chamakkada, Kollam</span></div>
+                </div>
+                <div class="contact-row">
+                    <span class="contact-icon"><svg th:replace="~{fragments/icons :: phone}"></svg></span>
+                    <div><span class="label">Phone</span><a th:href="${shop.phoneHref()}" th:text="${shop.phoneDisplay()}">+91 99953 60201</a></div>
+                </div>
+                <div class="contact-row">
+                    <span class="contact-icon"><svg th:replace="~{fragments/icons :: mail}"></svg></span>
+                    <div><span class="label">Email</span><a th:href="|mailto:${shop.email}|" th:text="${shop.email}">email</a></div>
+                </div>
+            </address>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container inner">
+        <span th:text="|© ${#temporals.year(#temporals.createNow())} ${shop.name} · ${shop.address}|"></span>
+        <a th:href="@{/portal}">Staff portal</a>
+    </div>
+</footer>
+</body>
+</html>

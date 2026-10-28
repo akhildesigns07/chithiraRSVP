@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Staff login')}"></head>
+<body>
+<div class="auth">
+    <aside class="auth-aside">
+        <a th:replace="~{fragments/layout :: brand('Invitation portal')}"></a>
+        <blockquote>
+            Every celebration begins with an invitation.
+            <span lang="ml">ഓരോ ആഘോഷവും ഒരു ക്ഷണത്തിൽ തുടങ്ങുന്നു.</span>
+        </blockquote>
+        <p class="foot" th:text="${shop.address}">Address</p>
+    </aside>
+    <main class="auth-main">
+        <div class="auth-card">
+            <a th:replace="~{fragments/layout :: brand('Invitation portal')}"></a>
+            <h1>Staff sign in</h1>
+            <p>Manage events, guest lists and digital invitations.</p>
+            <div th:if="${param.error}" class="alert alert-error" role="alert" style="margin-bottom:16px">Incorrect username or password.</div>
+            <div th:if="${param.logout}" class="alert alert-success" role="status" style="margin-bottom:16px">You have been signed out.</div>
+            <form th:action="@{/portal/login}" method="post">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input id="username" name="username" autocomplete="username" required autofocus>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+            </form>
+            <a class="back" th:href="@{/}">← Back to website</a>
+        </div>
+    </main>
+</div>
+</body>
+</html>

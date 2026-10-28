@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Send invites')}"></head>
+<body>
+<header class="app-header">
+    <div class="inner">
+        <a class="btn btn-ghost btn-sm" th:href="@{/h/{t}(t=${event.hostToken})}">← Dashboard</a>
+        <strong th:text="${event.coupleNames}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Names</strong>
+    </div>
+</header>
+<main class="app-main" style="max-width:640px">
+    <div class="page-header">
+        <div>
+            <h1>Send invitations</h1>
+            <p>Tap <strong>Send</strong> to open WhatsApp with the guest's personal message. Send it, come back, and the next guest is ready.</p>
+        </div>
+    </div>
+
+    <section class="card" style="margin-bottom:16px">
+        <div class="card-body progress-card">
+            <div class="row">
+                <h2><span id="sent-count" th:text="${totals.sent}">0</span> of <span id="total-count" th:text="${totals.invited}">0</span> sent</h2>
+            </div>
+            <div class="progress"><span id="sent-bar" th:style="|width: ${totals.invited == 0 ? 0 : totals.sent * 100 / totals.invited}%|"></span></div>
+            <div id="all-done" class="alert alert-success send-done" th:hidden="${current != null or guests.isEmpty()}">
+                <svg th:replace="~{fragments/icons :: check}" style="width:20px;height:20px"></svg> Everyone has been sent their invitation.
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div th:if="${guests.isEmpty()}" class="empty">
+            <div class="icon"><svg th:replace="~{fragments/icons :: users}"></svg></div>
+            <h2>No guests yet</h2>
+        </div>
+        <ol class="send-list" th:unless="${guests.isEmpty()}">
+            <li th:each="g : ${guests}" th:id="|guest-${g.id}|"
+                th:classappend="${g.id == current} ? 'current'"
+                th:attr="data-sent=${g.sent}">
+                <span class="avatar" aria-hidden="true" th:text="${#strings.toUpperCase(#strings.substring(g.name, 0, 1))}">A</span>
+                <div class="who">
+                    <strong th:text="${g.name}">Name</strong>
+                    <span class="status badge" th:classappend="${g.sent} ? 'success'" th:text="${g.sent} ? 'Sent' : 'Not sent'">Not sent</span>
+                </div>
+                <!--/* The server marks the guest as sent and redirects this new tab to wa.me. */-->
+                <form method="post" target="_blank" class="send-form"
+                      th:action="@{/h/{t}/send/{id}(t=${event.hostToken}, id=${g.id})}">
+                    <button type="submit" class="btn btn-whatsapp">
+                        <svg th:replace="~{fragments/icons :: whatsapp}"></svg><span class="label" th:text="${g.sent} ? 'Resend' : 'Send'">Send</span>
+                    </button>
+                </form>
+            </li>
+        </ol>
+    </section>
+</main>
+<script th:src="@{/js/send.js}"></script>
+</body>
+</html>
