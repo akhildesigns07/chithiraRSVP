@@ -1,3 +1,15 @@
+// Card preview tabs load into the preview iframe (plain links with target); keep the
+// selected state and the "Open full screen" link in step with the chosen design.
+document.addEventListener('click', function (e) {
+    var tab = e.target.closest('.preview-tab');
+    if (!tab) return;
+    document.querySelectorAll('.preview-tab').forEach(function (t) {
+        t.setAttribute('aria-selected', String(t === tab));
+    });
+    var open = document.getElementById('preview-open');
+    if (open) open.href = tab.href;
+});
+
 // Copy buttons: <button data-copy="#input-id">. Works for content swapped in by htmx too.
 document.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-copy]');

@@ -26,6 +26,7 @@ import com.chithira.rsvp.guest.GuestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -63,7 +64,7 @@ class StaffControllerTest {
                 .param("startsAt", "2027-01-10T18:00")
                 .param("venue", "Lulu Convention Centre, Thrissur")
                 .param("mapsUrl", mapsUrl)
-                .param("template", "MOONLIGHT")
+                .param("template", "NIKAH_CLASSIC")
                 .param("messageEn", "Join us")
                 .param("messageMl", "സ്വാഗതം")
                 .with(csrf());
@@ -80,7 +81,7 @@ class StaffControllerTest {
 
         var saved = events.findAll().getFirst();
         assertThat(saved.getCoupleNames()).isEqualTo("Meera & Arjun");
-        assertThat(saved.getTemplate()).isEqualTo(CardTemplate.MOONLIGHT);
+        assertThat(saved.getTemplate()).isEqualTo(CardTemplate.NIKAH_CLASSIC);
         assertThat(saved.getHostToken()).hasSize(22);
         assertThat(photos.findById(saved.getId())).get()
                 .satisfies(p -> assertThat(p.getContentType()).isEqualTo("image/png"));
@@ -258,6 +259,44 @@ class StaffControllerTest {
                 .andExpect(content().string(allOf(
                         containsString("+91 98765 43210"),
                         containsString("https://invite.test/h/" + event.getHostToken()))));
+    }
+
+    @ParameterizedTest
+    @EnumSource(CardTemplate.class)
+    void previewRendersTheRealCardForAnyDesignWithRepliesOff(CardTemplate template) throws Exception {
+        var event = data.event();
+        photos.save(new com.chithira.rsvp.event.EventPhoto(event.getId(), "image/png", TestData.PNG));
+
+        String html = mvc.perform(get("/portal/events/{id}/preview", event.getId()).param("template", template.name()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(html).contains("class=\"invite " + template.cssClass() + "\"", "Dear Guest Name,", "Anjali &amp; Rahul",
+                "Preview: replies are switched off.", "/portal/events/" + event.getId() + "/photo");
+        assertThat(html).doesNotContain("/i/", "hx-post=");
+        assertThat(html).containsPattern("<button type=\"submit\" class=\"btn btn-solid\" disabled");
+    }
+
+    @Test
+    void previewDefaultsToTheEventsDesignAndRejectsUnknownOnes() throws Exception {
+        var event = data.event();
+        mvc.perform(get("/portal/events/{id}/preview", event.getId()))
+                .andExpect(content().string(containsString("tpl-kerala-traditional")));
+        mvc.perform(get("/portal/events/{id}/preview", event.getId()).param("template", "MARIGOLD"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/portal/events/{id}/preview", 9999)).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void eventPageOffersAPhoneSizedPreviewOfEveryDesign() throws Exception {
+        var event = data.event();
+        String html = mvc.perform(get("/portal/events/{id}", event.getId()))
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(html).contains("<iframe name=\"card-preview\"", "width=\"360\"");
+        for (CardTemplate t : CardTemplate.values()) {
+            assertThat(html).contains("/portal/events/" + event.getId() + "/preview?template=" + t.name());
+        }
     }
 
     @Test

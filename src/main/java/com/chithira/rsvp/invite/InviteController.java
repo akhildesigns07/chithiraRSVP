@@ -34,11 +34,8 @@ public class InviteController {
     @GetMapping
     String card(@PathVariable String token, Model model) {
         Guest guest = guest(token);
-        model.addAttribute("guest", guest);
-        model.addAttribute("event", guest.getEvent());
-        model.addAttribute("hasPhoto", events.hasPhoto(guest.getEvent().getId()));
-        model.addAttribute("hasLetter", !events.letterPages(guest.getEvent().getId()).isEmpty());
-        model.addAttribute("maxHeadcount", GuestService.MAX_HEADCOUNT);
+        long eventId = guest.getEvent().getId();
+        InviteCardModel.forGuest(model, guest, events.hasPhoto(eventId), !events.letterPages(eventId).isEmpty());
         return "invite/card";
     }
 
@@ -87,10 +84,9 @@ public class InviteController {
         if (htmx == null) {
             return "redirect:/i/" + token + "#rsvp";
         }
-        model.addAttribute("guest", guest);
-        model.addAttribute("maxHeadcount", GuestService.MAX_HEADCOUNT);
+        InviteCardModel.forRsvpFragment(model, guest);
         model.addAttribute("justResponded", !model.containsAttribute("rsvpError"));
-        return "invite/card :: rsvp";
+        return "invite/parts :: rsvp";
     }
 
     private Guest guest(String token) {

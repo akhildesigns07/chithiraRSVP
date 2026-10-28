@@ -58,8 +58,8 @@ class InviteControllerTest {
                         containsString("Sunday, 14 February 2027"),
                         containsString("10:30 AM"),
                         containsString("https://maps.app.goo.gl/abc123"),
-                        containsString("tpl-marigold"),
-                        containsString("Noto+Sans+Malayalam"),
+                        containsString("tpl-kerala-traditional"),
+                        containsString("Noto+Serif+Malayalam"),
                         containsString("വിവാഹം"))));
     }
 

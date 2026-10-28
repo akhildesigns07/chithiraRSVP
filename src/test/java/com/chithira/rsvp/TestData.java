@@ -32,7 +32,7 @@ public class TestData {
         e.setStartsAt(LocalDateTime.of(2027, 2, 14, 10, 30));
         e.setVenue("St. Mary's Church, Kottayam");
         e.setMapsUrl("https://maps.app.goo.gl/abc123");
-        e.setTemplate(CardTemplate.MARIGOLD);
+        e.setTemplate(CardTemplate.KERALA_TRADITIONAL);
         e.setMessageEn("We joyfully invite you to celebrate our wedding.");
         e.setMessageMl("ഞങ്ങളുടെ വിവാഹത്തിലേക്ക് നിങ്ങളെ സ്നേഹപൂർവ്വം ക്ഷണിക്കുന്നു.");
         return events.save(e);

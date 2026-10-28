@@ -22,6 +22,10 @@ spring:
 
 server:
   port: ${PORT:8080}
+  # Keeps the invite page well under its 200 KB budget (HTML, CSS and htmx compress ~3-4x).
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,text/javascript,application/javascript,image/svg+xml,text/plain
   # Tomcat's RemoteIpValve: X-Forwarded-* is only honoured from internal proxies (private and
   # loopback addresses by default), so clients cannot spoof their IP for rate limiting.
   forward-headers-strategy: native

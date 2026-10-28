@@ -43,7 +43,7 @@ class SecurityTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "/portal", "/portal/events/new", "/portal/events/1", "/portal/events/1/edit",
-            "/portal/events/1/photo", "/portal/events/1/letter/1", "/anything-else"})
+            "/portal/events/1/photo", "/portal/events/1/letter/1", "/portal/events/1/preview", "/anything-else"})
     void staffPagesRequireLogin(String url) throws Exception {
         mvc.perform(get(url))
                 .andExpect(status().is3xxRedirection())

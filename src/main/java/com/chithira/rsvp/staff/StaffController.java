@@ -11,6 +11,7 @@ import com.chithira.rsvp.guest.Guest;
 import com.chithira.rsvp.guest.GuestListParser;
 import com.chithira.rsvp.guest.GuestService;
 import com.chithira.rsvp.host.Totals;
+import com.chithira.rsvp.invite.InviteCardModel;
 import com.chithira.rsvp.util.FileResponses;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -123,6 +124,16 @@ public class StaffController {
     @GetMapping("/events/{id}/letter/{page}")
     ResponseEntity<byte[]> letterPage(@PathVariable long id, @PathVariable int page) {
         return FileResponses.letterPage(events.letterPage(id, page), false);
+    }
+
+    /** The real invitation card with a sample guest, so staff can show customers each design. */
+    @GetMapping("/events/{id}/preview")
+    String preview(@PathVariable long id, @RequestParam(name = "template", required = false) CardTemplate template,
+                   Model model) {
+        Event event = events.get(id);
+        InviteCardModel.forPreview(model, event, template == null ? event.getTemplate() : template,
+                events.hasPhoto(id), !events.letterPages(id).isEmpty());
+        return "invite/card";
     }
 
     /** htmx endpoint: re-renders the guest section with either the updated list or the paste errors. */

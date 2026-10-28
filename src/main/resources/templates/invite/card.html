@@ -7,108 +7,15 @@
     <title th:text="|${event.coupleNames} — ${event.eventType.labelEn}|">Invitation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;600;700&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Malayalam:wght@400..700&display=swap">
     <link rel="stylesheet" th:href="@{/css/invite.css}">
     <script th:src="@{/webjars/htmx.org/2.0.4/dist/htmx.min.js}" defer></script>
-    <script th:src="@{/js/invite.js}" defer></script>
 </head>
-<body th:class="|invite ${event.template.cssClass()}|">
-<div class="sky" aria-hidden="true"></div>
-
-<main class="card">
-    <div class="frame" aria-hidden="true"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i></div>
-
-    <p class="greeting reveal" style="--i:0">
-        <span th:text="|Dear ${guest.name},|">Dear Guest,</span>
-        <span class="ml" lang="ml" th:text="|പ്രിയപ്പെട്ട ${guest.name},|"></span>
-    </p>
-
-    <img th:if="${hasPhoto}" class="photo reveal" style="--i:1" alt=""
-         th:src="@{/i/{t}/photo(t=${guest.token})}">
-
-    <p class="event-type reveal" style="--i:2">
-        <span th:text="${event.eventType.labelEn}">Wedding</span>
-        <span class="dot">·</span>
-        <span class="ml" lang="ml" th:text="${event.eventType.labelMl}">വിവാഹം</span>
-    </p>
-
-    <h1 class="couple reveal" style="--i:3" th:text="${event.coupleNames}">Anjali &amp; Rahul</h1>
-
-    <p class="message reveal" style="--i:4" th:text="${event.messageEn}">Message</p>
-    <p class="message ml reveal" style="--i:5" lang="ml" th:text="${event.messageMl}">സന്ദേശം</p>
-
-    <div class="when reveal" style="--i:6">
-        <time th:datetime="${event.startsAt}">
-            <span class="date" th:text="${#temporals.format(event.startsAt, 'EEEE, d MMMM yyyy')}">Sunday, 14 February 2027</span>
-            <span class="time" th:text="${#temporals.format(event.startsAt, 'h:mm a')}">10:30 AM</span>
-        </time>
-    </div>
-
-    <p class="venue reveal" style="--i:7" th:text="${event.venue}">Venue</p>
-
-    <div class="card-actions reveal" style="--i:8" th:if="${event.mapsUrl != null or hasLetter}">
-        <a th:if="${hasLetter}" th:href="@{/i/{t}/letter(t=${guest.token})}" class="btn btn-letter">
-            View full invitation letter <span class="ml" lang="ml">ക്ഷണക്കത്ത് മുഴുവനായി കാണുക</span>
-        </a>
-        <a th:if="${event.mapsUrl}" th:href="${event.mapsUrl}" class="btn btn-outline"
-           target="_blank" rel="noopener noreferrer">
-            Directions <span class="ml" lang="ml">വഴി കാണുക</span>
-        </a>
-    </div>
-
-    <section id="rsvp" class="rsvp reveal" style="--i:9" th:fragment="rsvp">
-        <h2>Will you attend? <span class="ml" lang="ml">നിങ്ങൾ പങ്കെടുക്കുമോ?</span></h2>
-
-        <p th:if="${rsvpError}" class="rsvp-error" role="alert">
-            Please choose an option. <span class="ml" lang="ml">ദയവായി ഒരു ഓപ്ഷൻ തിരഞ്ഞെടുക്കുക.</span>
-        </p>
-
-        <div th:if="${guest.rsvpStatus.name() != 'PENDING'}" class="thanks" role="status" th:classappend="${justResponded} ? 'pop'">
-            <th:block th:if="${guest.rsvpStatus.name() == 'ATTENDING'}">
-                <p th:text="${guest.headcount == 1} ? 'Thank you! We look forward to seeing you.' : |Thank you! We look forward to seeing all ${guest.headcount} of you.|">Thank you!</p>
-                <p class="ml" lang="ml" th:text="|നന്ദി! നിങ്ങളെ (${guest.headcount}) കാണാൻ ഞങ്ങൾ കാത്തിരിക്കുന്നു.|"></p>
-            </th:block>
-            <th:block th:if="${guest.rsvpStatus.name() == 'NOT_ATTENDING'}">
-                <p>Thank you for letting us know. You will be missed.</p>
-                <p class="ml" lang="ml">അറിയിച്ചതിന് നന്ദി.</p>
-            </th:block>
-        </div>
-
-        <details th:attr="open=${guest.rsvpStatus.name() == 'PENDING'} ? 'open' : null">
-            <summary th:hidden="${guest.rsvpStatus.name() == 'PENDING'}">Change response <span class="ml" lang="ml">മറുപടി മാറ്റുക</span></summary>
-            <form class="rsvp-form" method="post"
-                  th:action="@{/i/{t}/rsvp(t=${guest.token})}"
-                  th:attr="hx-post=@{/i/{t}/rsvp(t=${guest.token})}"
-                  hx-target="#rsvp" hx-swap="outerHTML"
-                  hx-on::response-error="this.querySelector('.rsvp-busy').hidden = false">
-                <div class="choices">
-                    <label class="choice">
-                        <input type="radio" name="attending" value="yes" required
-                               th:checked="${guest.rsvpStatus.name() == 'ATTENDING'}">
-                        <span>Attending <span class="ml" lang="ml">പങ്കെടുക്കും</span></span>
-                    </label>
-                    <label class="choice">
-                        <input type="radio" name="attending" value="no"
-                               th:checked="${guest.rsvpStatus.name() == 'NOT_ATTENDING'}">
-                        <span>Not attending <span class="ml" lang="ml">പങ്കെടുക്കില്ല</span></span>
-                    </label>
-                </div>
-                <label class="headcount">
-                    <span>Number of guests <span class="ml" lang="ml">അതിഥികളുടെ എണ്ണം</span></span>
-                    <select name="headcount">
-                        <option th:each="n : ${#numbers.sequence(1, maxHeadcount)}" th:value="${n}" th:text="${n}"
-                                th:selected="${guest.headcount != null ? n == guest.headcount : n == 1}">1</option>
-                    </select>
-                </label>
-                <p class="rsvp-error rsvp-busy" role="alert" hidden>
-                    Too many attempts. Please wait a minute and try again.
-                    <span class="ml" lang="ml">ദയവായി ഒരു മിനിറ്റിന് ശേഷം വീണ്ടും ശ്രമിക്കുക.</span>
-                </p>
-                <button type="submit" class="btn">Send reply <span class="ml" lang="ml">മറുപടി അയയ്ക്കുക</span></button>
-            </form>
-        </details>
-    </section>
-</main>
+<body th:class="|invite ${template.cssClass()}|">
+<!--/* One fragment per design; th:replace outranks th:if, hence the th:block guards. */-->
+<th:block th:if="${template.name() == 'KERALA_TRADITIONAL'}"><main th:replace="~{invite/designs/kerala-traditional :: card}"></main></th:block>
+<th:block th:if="${template.name() == 'CHRISTIAN_ELEGANT'}"><main th:replace="~{invite/designs/christian-elegant :: card}"></main></th:block>
+<th:block th:if="${template.name() == 'NIKAH_CLASSIC'}"><main th:replace="~{invite/designs/nikah-classic :: card}"></main></th:block>
 <p class="credit" th:text="|Invitation by ${shop.name}|"></p>
 </body>
 </html>

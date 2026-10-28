@@ -47,11 +47,7 @@
 
             <div class="hero-visual" aria-hidden="true">
                 <div class="phone">
-                    <div class="phone-screen tpl-marigold">
-                        <span class="petal" style="left:12%;animation-delay:-1s"></span>
-                        <span class="petal" style="left:38%;animation-delay:-4s;animation-duration:9s"></span>
-                        <span class="petal" style="left:66%;animation-delay:-2.5s"></span>
-                        <span class="petal" style="left:84%;animation-delay:-6s;animation-duration:10s"></span>
+                    <div class="phone-screen tpl-kerala-traditional">
                         <div class="mini-card">
                             <p class="mini-dear">Dear Anil,</p>
                             <p class="mini-type">Wedding · <span lang="ml">വിവാഹം</span></p>
@@ -111,12 +107,6 @@
                 <figure class="design" th:each="t : ${templates}">
                     <div class="phone phone-sm">
                         <div class="phone-screen" th:classappend="${t.cssClass()}">
-                            <span th:if="${t.name() == 'MARIGOLD'}" class="petal" style="left:20%;animation-delay:-2s"></span>
-                            <span th:if="${t.name() == 'MARIGOLD'}" class="petal" style="left:70%;animation-delay:-5s"></span>
-                            <span th:if="${t.name() == 'MOONLIGHT'}" class="star" style="left:15%;top:12%"></span>
-                            <span th:if="${t.name() == 'MOONLIGHT'}" class="star" style="left:80%;top:20%;animation-delay:-1s"></span>
-                            <span th:if="${t.name() == 'MOONLIGHT'}" class="star" style="left:30%;top:85%;animation-delay:-2s"></span>
-                            <span th:if="${t.name() == 'MOONLIGHT'}" class="star" style="left:72%;top:78%;animation-delay:-.5s"></span>
                             <div class="mini-card">
                                 <p class="mini-type">Engagement</p>
                                 <p class="mini-names">Meera &amp; Arjun</p>

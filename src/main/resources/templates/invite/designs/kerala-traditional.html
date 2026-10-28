@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/* Kerala Traditional: kasavu-bordered cream card on deep maroon, brass nilavilakku crowning the card. */-->
+<main th:fragment="card" class="card">
+    <div th:replace="~{invite/parts :: frame}"></div>
+
+    <svg class="motif lamp" viewBox="0 0 120 170" width="84" height="119" role="img" aria-label="Nilavilakku (traditional lamp)">
+        <defs>
+            <linearGradient id="kt-brass" x1="0" x2="1">
+                <stop offset="0" stop-color="#9a6a17"/><stop offset=".45" stop-color="#f1cf72"/><stop offset="1" stop-color="#a87514"/>
+            </linearGradient>
+            <radialGradient id="kt-flame" cx=".5" cy=".75" r=".7">
+                <stop offset="0" stop-color="#fff6c2"/><stop offset=".45" stop-color="#ffbe3b"/><stop offset="1" stop-color="#e2571b"/>
+            </radialGradient>
+        </defs>
+        <g class="flames" fill="url(#kt-flame)">
+            <path class="flame" d="M60 6c6 11 9 20 0 31-9-11-6-20 0-31z"/>
+            <path class="flame f2" d="M31 26c4 7 6 13 0 20-6-7-4-13 0-20z"/>
+            <path class="flame f3" d="M89 26c4 7 6 13 0 20-6-7-4-13 0-20z"/>
+        </g>
+        <g fill="url(#kt-brass)">
+            <rect x="22" y="44" width="76" height="6" rx="3"/>
+            <path d="M24 50h72c-4 12-18 19-36 19S28 62 24 50z"/>
+            <ellipse cx="60" cy="74" rx="9" ry="5"/>
+            <rect x="56" y="74" width="8" height="58"/>
+            <ellipse cx="60" cy="96" rx="11" ry="5"/>
+            <ellipse cx="60" cy="118" rx="8" ry="4"/>
+            <path d="M60 130c-20 0-32 14-36 26h72c-4-12-16-26-36-26z"/>
+            <rect x="18" y="155" width="84" height="7" rx="3.5"/>
+        </g>
+    </svg>
+
+    <p th:replace="~{invite/parts :: greeting}"></p>
+    <div th:replace="~{invite/parts :: names}"></div>
+
+    <svg class="divider stage s-details" viewBox="0 0 240 16" width="200" height="14" aria-hidden="true">
+        <path d="M0 8h96M144 8h96" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M120 1l7 7-7 7-7-7z M104 8l4-4 4 4-4 4z M136 8l4-4 4 4-4 4z" fill="currentColor"/>
+    </svg>
+
+    <div th:replace="~{invite/parts :: event-details}"></div>
+    <div th:replace="~{invite/parts :: respond}"></div>
+</main>
+</body>
+</html>

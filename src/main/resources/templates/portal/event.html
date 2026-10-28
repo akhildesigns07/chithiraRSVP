@@ -74,6 +74,29 @@
         </div>
     </div>
 
+    <section class="card preview-card" style="margin-bottom:24px">
+        <div class="card-header">
+            <div><h2>Card preview</h2><p>The live card at phone width (360 px) with a sample guest. Switch designs to show the customer.</p></div>
+            <a class="btn btn-secondary btn-sm" id="preview-open" target="_blank" rel="noopener"
+               th:href="@{/portal/events/{id}/preview(id=${event.id}, template=${event.template})}"><svg th:replace="~{fragments/icons :: external}"></svg>Open full screen</a>
+        </div>
+        <div class="card-body preview-body">
+            <div class="preview-tabs" role="tablist" aria-label="Card design">
+                <a th:each="t : ${templates}" role="tab" class="preview-tab" target="card-preview"
+                   th:href="@{/portal/events/{id}/preview(id=${event.id}, template=${t})}"
+                   th:attr="aria-selected=${t == event.template}">
+                    <span class="swatch-dot" th:classappend="${t.cssClass()}" aria-hidden="true"></span>
+                    <span><strong th:text="${t.title}">Design</strong><span th:if="${t == event.template}" class="muted small"> · in use</span></span>
+                </a>
+                <p class="muted small">Tap a design again to replay the animation. Replies are switched off in the preview.</p>
+            </div>
+            <div class="phone-frame">
+                <iframe name="card-preview" title="Invitation card preview" width="360" height="720" loading="lazy"
+                        th:src="@{/portal/events/{id}/preview(id=${event.id}, template=${event.template})}"></iframe>
+            </div>
+        </div>
+    </section>
+
     <section id="guests" th:fragment="guests" class="card">
         <div class="card-header">
             <div><h2>Guests <span class="muted" th:text="|(${guests.size()})|">(0)</span></h2><p>Each guest gets a private invitation link.</p></div>
