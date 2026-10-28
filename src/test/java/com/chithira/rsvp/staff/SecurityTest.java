@@ -11,7 +11,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
 import com.chithira.rsvp.IntegrationTest;
+import com.chithira.rsvp.TestData;
+import com.chithira.rsvp.event.EventRepository;
+import com.chithira.rsvp.guest.GuestRepository;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,9 +33,66 @@ class SecurityTest {
     @Autowired
     MockMvc mvc;
 
+    @Autowired
+    TestData data;
+    @Autowired
+    EventRepository events;
+    @Autowired
+    GuestRepository guests;
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "/portal", "/portal/events/new", "/portal/events/1", "/portal/events/1/edit",
+            "/portal/events/1/photo", "/portal/events/1/letter/1", "/anything-else"})
+    void staffPagesRequireLogin(String url) throws Exception {
+        mvc.perform(get(url))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/portal/login"))
+                .andExpect(unauthenticated());
+    }
+
     @Test
-    void staffPagesRequireLogin() throws Exception {
-        mvc.perform(get("/portal")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrlPattern("**/portal/login"));
+    void staffPostsRequireLoginEvenWithCsrfToken() throws Exception {
+        var event = data.event();
+
+        mvc.perform(post("/portal/events/{id}/guests", event.getId()).param("guests", "A, 9876543210").with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/portal/login"));
+        mvc.perform(multipart("/portal/events").param("coupleNames", "X").with(csrf()))
+                .andExpect(redirectedUrlPattern("**/portal/login"));
+
+        assertThat(guests.findByEventIdOrderById(event.getId())).isEmpty();
+        assertThat(events.count()).isEqualTo(1);
+    }
+
+    @Test
+    @WithMockUser(roles = "STAFF")
+    void staffFormsRejectMissingOrBadCsrfToken() throws Exception {
+        var event = data.event();
+
+        mvc.perform(post("/portal/events/{id}/guests", event.getId()).param("guests", "A, 9876543210"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/portal/events/{id}/guests", event.getId()).param("guests", "A, 9876543210")
+                        .with(csrf().useInvalidToken()))
+                .andExpect(status().isForbidden());
+        mvc.perform(multipart("/portal/events/{id}", event.getId()).param("coupleNames", "Changed"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/portal/logout")).andExpect(status().isForbidden());
+
+        assertThat(guests.findByEventIdOrderById(event.getId())).isEmpty();
+        assertThat(events.findById(event.getId()).orElseThrow().getCoupleNames()).isEqualTo("Anjali & Rahul");
+    }
+
+    @Test
+    void loginFormItselfRequiresCsrfToken() throws Exception {
+        mvc.perform(post("/portal/login").param("username", "admin").param("password", "secret"))
+                .andExpect(status().isForbidden())
+                .andExpect(unauthenticated());
+    }
+
+    @Test
+    void staffPagesRenderTheCsrfTokenIntoForms() throws Exception {
+        mvc.perform(get("/portal/login")).andExpect(content().string(containsString("name=\"_csrf\"")));
     }
 
     @Test

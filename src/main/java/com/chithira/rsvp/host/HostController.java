@@ -4,7 +4,6 @@ import com.chithira.rsvp.event.Event;
 import com.chithira.rsvp.event.EventService;
 import com.chithira.rsvp.guest.Guest;
 import com.chithira.rsvp.guest.GuestService;
-import com.chithira.rsvp.util.Tokens;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.springframework.http.ContentDisposition;
@@ -78,9 +77,6 @@ public class HostController {
     }
 
     private Event event(String hostToken) {
-        if (!Tokens.looksValid(hostToken)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
         return events.findByHostToken(hostToken).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }

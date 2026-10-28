@@ -22,7 +22,9 @@ spring:
 
 server:
   port: ${PORT:8080}
-  forward-headers-strategy: framework
+  # Tomcat's RemoteIpValve: X-Forwarded-* is only honoured from internal proxies (private and
+  # loopback addresses by default), so clients cannot spoof their IP for rate limiting.
+  forward-headers-strategy: native
   servlet:
     session:
       cookie:
@@ -34,6 +36,8 @@ app:
   admin:
     username: ${ADMIN_USERNAME}
     password: ${ADMIN_PASSWORD}
+  rate-limit:
+    rsvp-per-minute: ${RSVP_RATE_LIMIT_PER_MINUTE:10}
   shop:
     name: ${SHOP_NAME:Chithira Printer}
     address: ${SHOP_ADDRESS:TD Complex, Chamakkada, Kollam}

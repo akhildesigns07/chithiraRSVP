@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class WhatsAppMessagesTest {
 
     private final WhatsAppMessages messages =
-            new WhatsAppMessages(new Links(new AppProperties("https://inv.example/", null, null)));
+            new WhatsAppMessages(new Links(new AppProperties("https://inv.example/", null, null, null)));
 
     @Test
     void encodesEverythingThatIsNotUnreserved() {

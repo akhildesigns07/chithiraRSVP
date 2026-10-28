@@ -10,7 +10,7 @@ public interface GuestRepository extends JpaRepository<Guest, Long> {
     List<Guest> findByEventIdOrderById(Long eventId);
 
     @EntityGraph(attributePaths = "event")
-    Optional<Guest> findByToken(String token);
+    Optional<Guest> findByTokenHash(String tokenHash);
 
     Optional<Guest> findByIdAndEventId(Long id, Long eventId);
 

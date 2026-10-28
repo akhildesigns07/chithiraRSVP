@@ -1,6 +1,7 @@
 package com.chithira.rsvp.event;
 
 import java.util.List;
+import com.chithira.rsvp.util.Tokens;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -38,9 +39,14 @@ public class EventService {
         return events.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
+    /** Looks up by token hash, then confirms the token itself in constant time. */
     @Transactional(readOnly = true)
     public Optional<Event> findByHostToken(String hostToken) {
-        return events.findByHostToken(hostToken);
+        if (!Tokens.looksValid(hostToken)) {
+            return Optional.empty();
+        }
+        return events.findByHostTokenHash(Tokens.hash(hostToken))
+                .filter(e -> Tokens.matches(e.getHostToken(), hostToken));
     }
 
     /** Validates uploads before touching the database so a bad file never saves a half-edited event. */

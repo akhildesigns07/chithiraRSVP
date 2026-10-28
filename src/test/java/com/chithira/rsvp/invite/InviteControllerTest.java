@@ -76,6 +76,71 @@ class InviteControllerTest {
     }
 
     @Test
+    void wrongTokenIs404OnEveryGuestEndpointAndChangesNothing() throws Exception {
+        String wrong = guest.getToken().substring(0, 21) + (guest.getToken().endsWith("A") ? "B" : "A");
+        for (String token : new String[] {wrong, "AAAAAAAAAAAAAAAAAAAAAA", "short"}) {
+            mvc.perform(get("/i/{t}", token)).andExpect(status().isNotFound());
+            mvc.perform(get("/i/{t}/photo", token)).andExpect(status().isNotFound());
+            mvc.perform(get("/i/{t}/letter", token)).andExpect(status().isNotFound());
+            mvc.perform(get("/i/{t}/letter/1", token)).andExpect(status().isNotFound());
+            mvc.perform(post("/i/{t}/rsvp", token).param("attending", "yes").param("headcount", "2"))
+                    .andExpect(status().isNotFound());
+        }
+        assertThat(guests.findById(guest.getId()).orElseThrow().getRsvpStatus()).isEqualTo(RsvpStatus.PENDING);
+    }
+
+    @Test
+    void hostTokenIsNotAcceptedAsAGuestToken() throws Exception {
+        String hostToken = guest.getEvent().getHostToken();
+        mvc.perform(get("/i/{t}", hostToken)).andExpect(status().isNotFound());
+        mvc.perform(post("/i/{t}/rsvp", hostToken).param("attending", "no")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void rsvpOnlyEverTouchesTheTokensOwnGuestAndEvent() throws Exception {
+        var otherEvent = data.event();
+        var otherGuest = data.guest(otherEvent, "Same Phone Other Event", "919876543210");
+
+        mvc.perform(post("/i/{t}/rsvp", guest.getToken()).param("attending", "yes").param("headcount", "4"));
+
+        assertThat(guests.findById(guest.getId()).orElseThrow().getHeadcount()).isEqualTo(4);
+        var untouched = guests.findById(otherGuest.getId()).orElseThrow();
+        assertThat(untouched.getRsvpStatus()).isEqualTo(RsvpStatus.PENDING);
+        assertThat(untouched.getHeadcount()).isNull();
+    }
+
+    @Test
+    void answeringTwiceUpdatesTheSameGuestInsteadOfAddingOne() throws Exception {
+        long before = guests.count();
+
+        mvc.perform(post("/i/{t}/rsvp", guest.getToken()).header("HX-Request", "true")
+                .param("attending", "yes").param("headcount", "2"));
+        var first = guests.findById(guest.getId()).orElseThrow();
+        assertThat(first.getRsvpStatus()).isEqualTo(RsvpStatus.ATTENDING);
+        assertThat(first.getHeadcount()).isEqualTo(2);
+
+        mvc.perform(post("/i/{t}/rsvp", guest.getToken()).header("HX-Request", "true")
+                        .param("attending", "yes").param("headcount", "5"))
+                .andExpect(content().string(containsString("all 5 of you")));
+
+        assertThat(guests.count()).isEqualTo(before);
+        assertThat(guests.findByEventIdOrderById(guest.getEvent().getId())).singleElement()
+                .satisfies(g -> {
+                    assertThat(g.getId()).isEqualTo(guest.getId());
+                    assertThat(g.getRsvpStatus()).isEqualTo(RsvpStatus.ATTENDING);
+                    assertThat(g.getHeadcount()).isEqualTo(5);
+                });
+    }
+
+    @Test
+    void rsvpFragmentNeverShowsPhoneNumbers() throws Exception {
+        String html = mvc.perform(post("/i/{t}/rsvp", guest.getToken()).header("HX-Request", "true")
+                        .param("attending", "yes").param("headcount", "2"))
+                .andReturn().getResponse().getContentAsString();
+        assertThat(html).doesNotContain("9876543210").doesNotContain("98765 43210");
+    }
+
+    @Test
     void attendingWithHeadcountViaHtmx() throws Exception {
         mvc.perform(post("/i/{t}/rsvp", guest.getToken())
                         .header("HX-Request", "true")

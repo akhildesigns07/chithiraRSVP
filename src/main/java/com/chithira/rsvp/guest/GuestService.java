@@ -1,6 +1,7 @@
 package com.chithira.rsvp.guest;
 
 import com.chithira.rsvp.event.Event;
+import com.chithira.rsvp.util.Tokens;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -49,14 +50,20 @@ public class GuestService {
         return new GuestListParser.Result(valid, List.of());
     }
 
+    /** Looks up by token hash, then confirms the token itself in constant time. */
     @Transactional(readOnly = true)
     public Optional<Guest> findByToken(String token) {
-        return guests.findByToken(token);
+        if (!Tokens.looksValid(token)) {
+            return Optional.empty();
+        }
+        return guests.findByTokenHash(Tokens.hash(token))
+                .filter(g -> Tokens.matches(g.getToken(), token));
     }
 
+    /** Records the guest's reply. The guest is re-read within its own event, never by id alone. */
     @Transactional
     public Guest respond(Guest guest, boolean attending, Integer headcount) {
-        var managed = guests.findById(guest.getId()).orElseThrow();
+        var managed = guests.findByIdAndEventId(guest.getId(), guest.getEvent().getId()).orElseThrow();
         if (attending) {
             if (headcount == null || headcount < 1 || headcount > MAX_HEADCOUNT) {
                 throw new IllegalArgumentException("Headcount must be between 1 and " + MAX_HEADCOUNT);

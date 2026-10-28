@@ -24,6 +24,10 @@ public class Event {
     @Column(nullable = false, updatable = false)
     private String hostToken = Tokens.newToken();
 
+    /** Lookup key for {@link #hostToken}; see {@link Tokens}. */
+    @Column(nullable = false, updatable = false)
+    private String hostTokenHash = Tokens.hash(hostToken);
+
     @Column(nullable = false)
     private String coupleNames;
 

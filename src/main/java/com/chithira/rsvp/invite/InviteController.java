@@ -5,7 +5,6 @@ import com.chithira.rsvp.event.LetterPageInfo;
 import com.chithira.rsvp.guest.Guest;
 import com.chithira.rsvp.guest.GuestService;
 import com.chithira.rsvp.util.FileResponses;
-import com.chithira.rsvp.util.Tokens;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -95,9 +94,6 @@ public class InviteController {
     }
 
     private Guest guest(String token) {
-        if (!Tokens.looksValid(token)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
         return guests.findByToken(token).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }

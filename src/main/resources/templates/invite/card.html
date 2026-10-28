@@ -79,7 +79,8 @@
             <form class="rsvp-form" method="post"
                   th:action="@{/i/{t}/rsvp(t=${guest.token})}"
                   th:attr="hx-post=@{/i/{t}/rsvp(t=${guest.token})}"
-                  hx-target="#rsvp" hx-swap="outerHTML">
+                  hx-target="#rsvp" hx-swap="outerHTML"
+                  hx-on::response-error="this.querySelector('.rsvp-busy').hidden = false">
                 <div class="choices">
                     <label class="choice">
                         <input type="radio" name="attending" value="yes" required
@@ -99,6 +100,10 @@
                                 th:selected="${guest.headcount != null ? n == guest.headcount : n == 1}">1</option>
                     </select>
                 </label>
+                <p class="rsvp-error rsvp-busy" role="alert" hidden>
+                    Too many attempts. Please wait a minute and try again.
+                    <span class="ml" lang="ml">ദയവായി ഒരു മിനിറ്റിന് ശേഷം വീണ്ടും ശ്രമിക്കുക.</span>
+                </p>
                 <button type="submit" class="btn">Send reply <span class="ml" lang="ml">മറുപടി അയയ്ക്കുക</span></button>
             </form>
         </details>

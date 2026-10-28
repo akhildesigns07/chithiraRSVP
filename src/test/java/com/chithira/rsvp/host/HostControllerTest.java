@@ -69,9 +69,17 @@ class HostControllerTest {
     }
 
     @Test
-    void unknownHostTokenIs404() throws Exception {
-        mvc.perform(get("/h/{t}", "AAAAAAAAAAAAAAAAAAAAAA")).andExpect(status().isNotFound());
-        mvc.perform(get("/h/{t}", "nope")).andExpect(status().isNotFound());
+    void wrongHostTokenIs404OnEveryHostEndpoint() throws Exception {
+        String host = event.getHostToken();
+        String wrong = host.substring(0, 21) + (host.endsWith("A") ? "B" : "A");
+        // A guest token is a valid token, but not for the host pages.
+        for (String token : new String[] {wrong, "AAAAAAAAAAAAAAAAAAAAAA", "nope", anil.getToken()}) {
+            mvc.perform(get("/h/{t}", token)).andExpect(status().isNotFound());
+            mvc.perform(get("/h/{t}/guests.csv", token)).andExpect(status().isNotFound());
+            mvc.perform(get("/h/{t}/send", token)).andExpect(status().isNotFound());
+            mvc.perform(post("/h/{t}/send/{id}", token, fathima.getId())).andExpect(status().isNotFound());
+        }
+        assertThat(guests.findById(fathima.getId()).orElseThrow().isSent()).isFalse();
     }
 
     @Test

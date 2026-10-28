@@ -11,3 +11,6 @@ app:
   admin:
     username: admin
     password: secret
+  # High so RSVP tests in a shared context aren't throttled; RsvpRateLimitTest sets its own limit.
+  rate-limit:
+    rsvp-per-minute: 1000

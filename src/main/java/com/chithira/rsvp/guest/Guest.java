@@ -31,6 +31,10 @@ public class Guest {
     @Column(nullable = false, updatable = false)
     private String token = Tokens.newToken();
 
+    /** Lookup key for {@link #token}; see {@link Tokens}. */
+    @Column(nullable = false, updatable = false)
+    private String tokenHash = Tokens.hash(token);
+
     @Column(nullable = false)
     private String name;
 

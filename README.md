@@ -56,6 +56,7 @@ The tests use an in-memory H2 database in PostgreSQL mode, migrated by the same 
 | `DB_USERNAME` | in production | `rsvp` | Database user |
 | `DB_PASSWORD` | in production | `rsvp` | Database password |
 | `PORT` | no | `8080` | HTTP port |
+| `RSVP_RATE_LIMIT_PER_MINUTE` | no | `10` | RSVP submissions allowed per client IP per minute (sliding window, per app instance) |
 | `SHOP_NAME` | no | `Chithira Printer` | Shop name on the homepage, portal and invitations |
 | `SHOP_ADDRESS` | no | `TD Complex, Chamakkada, Kollam` | Address, also used for the "Get directions" link |
 | `SHOP_PHONE` | no | `9995360201` | Phone number for "Call" links |
@@ -88,7 +89,7 @@ The app is a single container plus a PostgreSQL database. Any host that runs Doc
      chithira-rsvp
    ```
    Flyway applies migrations automatically on startup.
-4. **Put HTTPS in front of it.** Allow request bodies of at least 15 MB at the proxy so letter uploads aren't rejected (nginx: `client_max_body_size 15m;`). Use a reverse proxy (Caddy, nginx, or the platform's load balancer) that terminates TLS and forwards to port 8080. The app honours `X-Forwarded-*` headers. Set `APP_BASE_URL` to the public `https://` address, because that is the address guests receive on WhatsApp.
+4. **Put HTTPS in front of it.** Allow request bodies of at least 15 MB at the proxy so letter uploads aren't rejected (nginx: `client_max_body_size 15m;`). Use a reverse proxy (Caddy, nginx, or the platform's load balancer) that terminates TLS and forwards to port 8080. The app only honours `X-Forwarded-For`/`-Proto` from proxies on private or loopback addresses, which is Tomcat's default `internal-proxies` list. A client can't fake its IP to get around the RSVP rate limit. If your load balancer connects from a public address, add it with `SERVER_TOMCAT_REMOTEIP_INTERNAL_PROXIES` (a regex). Otherwise every guest will appear to come from the load balancer and share one RSVP budget. Set `APP_BASE_URL` to the public `https://` address, because that is the address guests receive on WhatsApp.
    A minimal Caddyfile:
    ```
    invites.example.com {

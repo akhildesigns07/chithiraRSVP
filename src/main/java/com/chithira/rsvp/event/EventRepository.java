@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
 
-    Optional<Event> findByHostToken(String hostToken);
+    Optional<Event> findByHostTokenHash(String hostTokenHash);
 
     List<Event> findAllByOrderByStartsAtDesc();
 }

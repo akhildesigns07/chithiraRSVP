@@ -24,6 +24,8 @@ import com.chithira.rsvp.event.LetterPageInfo;
 import com.chithira.rsvp.event.LetterPageRepository;
 import com.chithira.rsvp.guest.GuestRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -94,6 +96,57 @@ class StaffControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("1 MB or smaller")));
         assertThat(events.count()).isZero();
+    }
+
+    @Test
+    void acceptsPhotoOfExactlyOneMegabyte() throws Exception {
+        byte[] exact = new byte[1024 * 1024];
+        System.arraycopy(TestData.PNG, 0, exact, 0, TestData.PNG.length);
+
+        mvc.perform(eventForm("/portal/events", new MockMultipartFile("photo", "ok.png", "image/png", exact)))
+                .andExpect(status().is3xxRedirection());
+        assertThat(photos.count()).isEqualTo(1);
+    }
+
+    @Test
+    void oversizedPhotoOnEditKeepsTheExistingPhotoAndEvent() throws Exception {
+        var event = data.event();
+        photos.save(new com.chithira.rsvp.event.EventPhoto(event.getId(), "image/png", TestData.PNG));
+        byte[] big = new byte[1024 * 1024 + 1];
+        System.arraycopy(TestData.PNG, 0, big, 0, TestData.PNG.length);
+
+        mvc.perform(eventForm("/portal/events/" + event.getId(), new MockMultipartFile("photo", "big.png", "image/png", big)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("1 MB or smaller")));
+
+        assertThat(photos.findById(event.getId()).orElseThrow().getData()).isEqualTo(TestData.PNG);
+        assertThat(events.findById(event.getId()).orElseThrow().getCoupleNames()).isEqualTo("Anjali & Rahul");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "x.gif, image/gif, GIF89a....",
+            "x.svg, image/svg+xml, <svg xmlns='http://www.w3.org/2000/svg'/>",
+            "x.html, image/jpeg, <html><script>alert(1)</script>",
+            "x.pdf, image/png, %PDF-1.4",
+    })
+    void rejectsAnythingButJpegPngOrWebp(String name, String declaredType, String body) throws Exception {
+        mvc.perform(eventForm("/portal/events", new MockMultipartFile("photo", name, declaredType, body.getBytes())))
+                .andExpect(content().string(containsString("JPEG, PNG or WebP")));
+        assertThat(events.count()).isZero();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "image/jpeg, FFD8FFE000104A464946",
+            "image/webp, 524946460000000057454250",
+    })
+    void acceptsJpegAndWebpBySignature(String expectedType, String hex) throws Exception {
+        byte[] bytes = java.util.HexFormat.of().parseHex(hex);
+        mvc.perform(eventForm("/portal/events", new MockMultipartFile("photo", "p", "application/octet-stream", bytes)))
+                .andExpect(status().is3xxRedirection());
+        assertThat(photos.findAll()).singleElement()
+                .satisfies(p -> assertThat(p.getContentType()).isEqualTo(expectedType));
     }
 
     @Test
