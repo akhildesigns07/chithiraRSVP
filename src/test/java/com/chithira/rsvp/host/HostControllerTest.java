@@ -104,9 +104,11 @@ class HostControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat(html).containsPattern("id=\"guest-" + fathima.getId() + "\"[^>]*class=\"current\"");
-        assertThat(html).containsOnlyOnce("class=\"current\"");
-        assertThat(html).contains("action=\"/h/" + event.getHostToken() + "/send/" + bob.getId() + "\"");
+        // The dock offers the first not-yet-sent guest; every row can be sent from the list too.
+        assertThat(html).containsPattern("id=\"dock-name\">Fathima<");
+        assertThat(html).contains("formaction=\"/h/" + event.getHostToken() + "/send/" + fathima.getId() + "\"");
+        assertThat(html).contains("formaction=\"/h/" + event.getHostToken() + "/send/" + bob.getId() + "\"");
+        assertThat(html).contains("<span id=\"sent-count\">1</span> of <span id=\"total-count\">3</span> sent");
         assertThat(html).doesNotContain("wa.me").doesNotContain("9876543210").doesNotContain("501234567");
     }
 
@@ -120,7 +122,6 @@ class HostControllerTest {
         String text = URLDecoder.decode(location.substring(location.indexOf("text=") + 5), StandardCharsets.UTF_8);
         assertThat(text)
                 .startsWith("Dear Fathima,\n\nWe joyfully invite you")
-                .contains("ഞങ്ങളുടെ വിവാഹത്തിലേക്ക്")
                 .endsWith("https://invite.test/i/" + fathima.getToken());
         assertThat(guests.findById(fathima.getId()).orElseThrow().getSentAt()).isNotNull();
     }

@@ -2,6 +2,7 @@ package com.chithira.rsvp.config;
 
 import com.chithira.rsvp.event.Event;
 import com.chithira.rsvp.guest.Guest;
+import com.chithira.rsvp.og.OgImageService;
 import org.springframework.stereotype.Component;
 
 /** Absolute links shared outside the app (WhatsApp messages, staff copy/paste). Exposed to templates as {@code @links}. */
@@ -20,5 +21,10 @@ public class Links {
 
     public String host(Event event) {
         return props.publicBaseUrl() + "/h/" + event.getHostToken();
+    }
+
+    /** Share image URL; the version makes WhatsApp fetch a fresh copy after the event changes. */
+    public String ogImage(Event event) {
+        return props.publicBaseUrl() + "/og/" + event.getOgSlug() + ".jpg?v=" + OgImageService.version(event);
     }
 }

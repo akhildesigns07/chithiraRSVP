@@ -8,5 +8,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<Event> findByHostTokenHash(String hostTokenHash);
 
+    Optional<Event> findByOgSlug(String ogSlug);
+
     List<Event> findAllByOrderByStartsAtDesc();
 }

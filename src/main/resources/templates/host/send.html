@@ -1,58 +1,147 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head th:replace="~{fragments/layout :: head('Send invites')}"></head>
-<body>
+<body class="send-page">
 <header class="app-header">
     <div class="inner">
         <a class="btn btn-ghost btn-sm" th:href="@{/h/{t}(t=${event.hostToken})}">← Dashboard</a>
-        <strong th:text="${event.coupleNames}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Names</strong>
+        <strong class="send-title" th:text="${event.coupleNames}">Names</strong>
     </div>
 </header>
-<main class="app-main" style="max-width:640px">
-    <div class="page-header">
-        <div>
-            <h1>Send invitations</h1>
-            <p>Tap <strong>Send</strong> to open WhatsApp with the guest's personal message. Send it, come back, and the next guest is ready.</p>
-        </div>
-    </div>
 
-    <section class="card" style="margin-bottom:16px">
-        <div class="card-body progress-card">
-            <div class="row">
-                <h2><span id="sent-count" th:text="${totals.sent}">0</span> of <span id="total-count" th:text="${totals.invited}">0</span> sent</h2>
+<main class="app-main send-main">
+    <!--/*
+      Every Send button submits this form (via form="send-form" + formaction), so the message on
+      screen is saved and used for that guest. The server marks the guest as sent and redirects the
+      new tab to wa.me; phone numbers never reach this page.
+    */-->
+    <form id="send-form" method="post" target="_blank" class="card composer" th:data-sample-link="${sampleLink}">
+        <details id="composer">
+            <summary class="composer-summary">
+                <span>
+                    <strong>Message</strong>
+                    <span class="muted small composer-lang-label" th:text="${composer.language().name() == 'ML'} ? 'Malayalam' : 'English'">English</span>
+                </span>
+                <span class="btn btn-secondary btn-sm" aria-hidden="true">Edit</span>
+            </summary>
+
+            <div class="composer-body">
+                <div class="segmented" role="radiogroup" aria-label="Send the message in">
+                    <label><input type="radio" name="language" value="EN" th:checked="${composer.language().name() == 'EN'}"><span>English</span></label>
+                    <label><input type="radio" name="language" value="ML" th:checked="${composer.language().name() == 'ML'}"><span lang="ml">മലയാളം</span></label>
+                </div>
+
+                <div class="field composer-en">
+                    <label for="template-en">English message</label>
+                    <textarea id="template-en" name="templateEn" rows="7" maxlength="1000" th:text="${composer.templateEn()}"></textarea>
+                </div>
+                <div class="field composer-ml">
+                    <label for="template-ml">Malayalam message</label>
+                    <textarea id="template-ml" name="templateMl" rows="7" maxlength="1000" lang="ml" th:text="${composer.templateMl()}"></textarea>
+                </div>
+
+                <div class="placeholders">
+                    <span class="muted small">Insert:</span>
+                    <button type="button" class="chip" data-insert="{name}">{name} <span class="muted">guest's name</span></button>
+                    <button type="button" class="chip" data-insert="{link}">{link} <span class="muted">invitation link</span></button>
+                </div>
+
+                <div class="field">
+                    <span class="label">Preview</span>
+                    <div id="message-preview" class="message-preview" aria-live="polite"></div>
+                    <span id="composer-problem" class="error" role="alert" hidden></span>
+                </div>
+
+                <div class="composer-actions">
+                    <button type="button" class="btn btn-secondary btn-tap"
+                            th:attr="hx-post=@{/h/{t}/composer(t=${event.hostToken})}"
+                            hx-target="#composer-status" hx-swap="innerHTML">Save message</button>
+                    <button type="submit" class="btn btn-ghost btn-tap" formtarget="_self" formnovalidate
+                            th:formaction="@{/h/{t}/composer/reset(t=${event.hostToken})}"
+                            onclick="return confirm('Go back to the original message?')">Reset to original</button>
+                    <span id="composer-status" class="small" aria-live="polite">
+                        <th:block th:fragment="composer-status">
+                            <span th:if="${saved}" class="saved">Saved</span>
+                            <span th:if="${composerError}" class="error" th:text="${composerError}"></span>
+                        </th:block>
+                    </span>
+                </div>
             </div>
+        </details>
+    </form>
+
+    <section class="card progress-card send-progress">
+        <div class="card-body">
+            <h1 class="progress-text"><span id="sent-count" th:text="${totals.sent}">0</span> of <span id="total-count" th:text="${totals.invited}">0</span> sent</h1>
             <div class="progress"><span id="sent-bar" th:style="|width: ${totals.invited == 0 ? 0 : totals.sent * 100 / totals.invited}%|"></span></div>
-            <div id="all-done" class="alert alert-success send-done" th:hidden="${current != null or guests.isEmpty()}">
-                <svg th:replace="~{fragments/icons :: check}" style="width:20px;height:20px"></svg> Everyone has been sent their invitation.
-            </div>
         </div>
     </section>
+
+    <nav class="filters" aria-label="Show">
+        <button type="button" class="filter" data-filter="all" aria-pressed="false">All <span class="count" data-count="all" th:text="${totals.invited}">0</span></button>
+        <button type="button" class="filter" data-filter="unsent" aria-pressed="true">Not sent <span class="count" data-count="unsent" th:text="${totals.invited - totals.sent}">0</span></button>
+        <button type="button" class="filter" data-filter="sent" aria-pressed="false">Sent <span class="count" data-count="sent" th:text="${totals.sent}">0</span></button>
+        <button type="button" class="filter" data-filter="rsvp" aria-pressed="false">RSVP'd <span class="count" data-count="rsvp" th:text="${totals.responded()}">0</span></button>
+    </nav>
 
     <section class="card">
         <div th:if="${guests.isEmpty()}" class="empty">
             <div class="icon"><svg th:replace="~{fragments/icons :: users}"></svg></div>
             <h2>No guests yet</h2>
         </div>
-        <ol class="send-list" th:unless="${guests.isEmpty()}">
+        <p id="filter-empty" class="empty-filter muted" hidden>No guests in this list.</p>
+        <ol id="send-list" class="send-list" data-filter="unsent" th:unless="${guests.isEmpty()}">
             <li th:each="g : ${guests}" th:id="|guest-${g.id}|"
-                th:classappend="${g.id == current} ? 'current'"
-                th:attr="data-sent=${g.sent}">
+                th:data-id="${g.id}" th:data-name="${g.name}" th:data-sent="${g.sent}" th:data-rsvp="${g.rsvpStatus}"
+                th:data-undo-url="@{/h/{t}/guests/{id}/unsend(t=${event.hostToken}, id=${g.id})}">
                 <span class="avatar" aria-hidden="true" th:text="${#strings.toUpperCase(#strings.substring(g.name, 0, 1))}">A</span>
                 <div class="who">
                     <strong th:text="${g.name}">Name</strong>
-                    <span class="status badge" th:classappend="${g.sent} ? 'success'" th:text="${g.sent} ? 'Sent' : 'Not sent'">Not sent</span>
+                    <span class="badges">
+                        <span class="badge success if-sent">Sent</span>
+                        <span class="badge if-unsent">Not sent</span>
+                        <span th:replace="~{fragments/status :: rsvp(${g})}"></span>
+                    </span>
                 </div>
-                <!--/* The server marks the guest as sent and redirects this new tab to wa.me. */-->
-                <form method="post" target="_blank" class="send-form"
-                      th:action="@{/h/{t}/send/{id}(t=${event.hostToken}, id=${g.id})}">
-                    <button type="submit" class="btn btn-whatsapp">
-                        <svg th:replace="~{fragments/icons :: whatsapp}"></svg><span class="label" th:text="${g.sent} ? 'Resend' : 'Send'">Send</span>
+                <div class="row-actions">
+                    <button type="submit" form="send-form" class="btn btn-whatsapp btn-tap if-unsent"
+                            th:formaction="@{/h/{t}/send/{id}(t=${event.hostToken}, id=${g.id})}"
+                            th:data-id="${g.id}" th:aria-label="|Send to ${g.name}|">
+                        <svg th:replace="~{fragments/icons :: whatsapp}"></svg>Send
                     </button>
-                </form>
+                    <button type="button" class="btn btn-secondary btn-tap if-sent act-undo"
+                            th:aria-label="|Undo sent for ${g.name}|">Undo</button>
+                    <button type="submit" form="send-form" class="btn btn-ghost btn-tap if-sent"
+                            th:formaction="@{/h/{t}/send/{id}(t=${event.hostToken}, id=${g.id})}"
+                            th:data-id="${g.id}" th:aria-label="|Send again to ${g.name}|">Resend</button>
+                </div>
             </li>
         </ol>
     </section>
 </main>
+
+<!--/* Thumb-reach bar: the next guest to send, and an undo for the last send. */-->
+<div class="send-dock" th:unless="${guests.isEmpty()}">
+    <div id="dock-toast" class="dock-toast" role="status" hidden>
+        <span>Marked <strong id="toast-name"></strong> as sent</span>
+        <button type="button" id="toast-undo" class="btn btn-tap btn-toast">Undo</button>
+    </div>
+    <div class="dock-main">
+        <div id="dock-next" class="dock-next" th:hidden="${next == null}">
+            <span class="muted small">Next</span>
+            <strong id="dock-name" th:text="${next?.name}">Name</strong>
+        </div>
+        <div id="dock-done" class="dock-done" th:hidden="${next != null}">
+            <svg th:replace="~{fragments/icons :: check}"></svg> Everyone has been sent their invitation
+        </div>
+        <button id="dock-send" type="submit" form="send-form" class="btn btn-whatsapp btn-xl"
+                th:hidden="${next == null}"
+                th:formaction="${next} ? @{/h/{t}/send/{id}(t=${event.hostToken}, id=${next.id})} : null"
+                th:data-id="${next?.id}">
+            <svg th:replace="~{fragments/icons :: whatsapp}"></svg>Send
+        </button>
+    </div>
+</div>
 <script th:src="@{/js/send.js}"></script>
 </body>
 </html>

@@ -21,6 +21,12 @@ Stack: Spring Boot 3.5, Java 21, Thymeleaf, htmx, PostgreSQL, Flyway.
 3. On the host dashboard, **Send invites on WhatsApp** opens the Send screen. Each **Send** button opens `https://wa.me/{phone}?text=…` in a new tab with the personal message and invite link, marks that guest as sent, and moves the highlight to the next unsent guest.
 4. Guests open their link, see the animated card, and reply Attending (with headcount) or Not attending.
 
+**Send screen.** The message composer has an English and a Malayalam version. Both can be edited, and both support the `{name}` and `{link}` placeholders. Every Send uses the message currently on screen and saves it. A message without `{link}` is refused. The screen shows "N of M sent" and has Not sent / Sent / RSVP'd filters. After each send, an Undo button can mark the guest as not sent again. The bottom bar always offers the next guest, so you can send to the whole list one-handed.
+
+**Link previews.** Invite pages carry Open Graph tags. The image `/og/{slug}.jpg` is a 1200×630 JPEG, drawn per event with Java2D: photo, names and date, with no guest data. It is cached in the database and redrawn after the event changes. The slug has a random suffix so event images can't be enumerated. JPEG and PNG photos appear in the image; WebP photos are left out, because Java's image reader can't decode them.
+
+**Guests** can be added (paste) or removed on the staff event page at any time. Removing a guest disables their link.
+
 Phone numbers never appear on guest or host pages, or in the CSV export. The Send button posts to the server, which redirects to `wa.me`, so the number stays out of the page HTML.
 
 ## Run locally

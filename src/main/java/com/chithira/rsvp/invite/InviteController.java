@@ -1,5 +1,6 @@
 package com.chithira.rsvp.invite;
 
+import com.chithira.rsvp.config.Links;
 import com.chithira.rsvp.event.EventService;
 import com.chithira.rsvp.event.LetterPageInfo;
 import com.chithira.rsvp.guest.Guest;
@@ -25,17 +26,20 @@ public class InviteController {
 
     private final GuestService guests;
     private final EventService events;
+    private final Links links;
 
-    public InviteController(GuestService guests, EventService events) {
+    public InviteController(GuestService guests, EventService events, Links links) {
         this.guests = guests;
         this.events = events;
+        this.links = links;
     }
 
     @GetMapping
     String card(@PathVariable String token, Model model) {
         Guest guest = guest(token);
         long eventId = guest.getEvent().getId();
-        InviteCardModel.forGuest(model, guest, events.hasPhoto(eventId), !events.letterPages(eventId).isEmpty());
+        InviteCardModel.forGuest(model, guest, events.hasPhoto(eventId), !events.letterPages(eventId).isEmpty(),
+                links.ogImage(guest.getEvent()));
         return "invite/card";
     }
 

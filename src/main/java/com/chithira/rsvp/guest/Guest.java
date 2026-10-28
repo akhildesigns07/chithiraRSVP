@@ -75,6 +75,10 @@ public class Guest {
         }
     }
 
+    public void markUnsent() {
+        sentAt = null;
+    }
+
     public void attend(int headcount) {
         this.rsvpStatus = RsvpStatus.ATTENDING;
         this.headcount = headcount;

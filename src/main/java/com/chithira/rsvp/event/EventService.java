@@ -68,6 +68,8 @@ public class EventService {
         var letter = UploadValidator.letter(uploads.letter());
         var event = get(id);
         form.applyTo(event);
+        // Always counts as a change, so the cached share image is redrawn even for a photo-only edit.
+        event.touch();
         photo.ifPresent(p -> photos.findById(id).ifPresentOrElse(
                 existing -> existing.replace(p.contentType(), p.data()),
                 () -> photos.save(new EventPhoto(id, p.contentType(), p.data()))));

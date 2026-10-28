@@ -113,6 +113,7 @@
                     <span class="hint">One guest per line as <strong>Name, phone</strong>. Indian and UAE mobile numbers.</span>
                 </div>
                 <div th:if="${addedCount != null and addedCount > 0}" class="alert alert-success" role="status" th:text="|Added ${addedCount} guest(s).|"></div>
+                <div th:if="${removedGuest}" class="alert alert-success" role="status">Guest removed.</div>
                 <div th:if="${pasteErrors != null and !pasteErrors.isEmpty()}" class="alert alert-error" role="alert">
                     <strong>Nothing was added.</strong> Fix these lines and try again:
                     <ul><li th:each="err : ${pasteErrors}" th:text="|Line ${err.lineNumber()}: ${err.line()} — ${err.message()}|"></li></ul>
@@ -129,7 +130,7 @@
 
         <div th:unless="${guests.isEmpty()}" class="table-wrap">
             <table class="table stack">
-                <thead><tr><th>Name</th><th>Phone</th><th>Invite</th><th>RSVP</th><th>Invitation link</th></tr></thead>
+                <thead><tr><th>Name</th><th>Phone</th><th>Invite</th><th>RSVP</th><th>Invitation link</th><th><span class="sr-only">Remove</span></th></tr></thead>
                 <tbody>
                 <tr th:each="g : ${guests}" th:with="inviteUrl=${@links.invite(g)}">
                     <td class="name" th:text="${g.name}">Name</td>
@@ -142,6 +143,14 @@
                             <button type="button" class="btn btn-secondary btn-sm" th:attr="data-copy=|#invite-${g.id}|">Copy</button>
                             <a class="btn btn-ghost btn-sm" th:href="${inviteUrl}" target="_blank" rel="noopener" title="Preview">Open</a>
                         </div>
+                    </td>
+                    <td class="num">
+                        <form method="post" th:action="@{/portal/events/{id}/guests/{gid}/delete(id=${event.id}, gid=${g.id})}"
+                              th:hx-post="@{/portal/events/{id}/guests/{gid}/delete(id=${event.id}, gid=${g.id})}"
+                              hx-target="#guests" hx-swap="outerHTML"
+                              th:hx-confirm="|Remove ${g.name} from the guest list? Their invitation link will stop working.|">
+                            <button type="submit" class="btn btn-ghost btn-sm danger-text" th:aria-label="|Remove ${g.name}|">Remove</button>
+                        </form>
                     </td>
                 </tr>
                 </tbody>

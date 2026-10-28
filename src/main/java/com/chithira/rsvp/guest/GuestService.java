@@ -82,6 +82,21 @@ public class GuestService {
         return guest;
     }
 
+    @Transactional
+    public Optional<Guest> markUnsent(long eventId, long guestId) {
+        var guest = guests.findByIdAndEventId(guestId, eventId);
+        guest.ifPresent(Guest::markUnsent);
+        return guest;
+    }
+
+    /** Removes a guest from this event only. Their invitation link stops working. */
+    @Transactional
+    public boolean remove(long eventId, long guestId) {
+        var guest = guests.findByIdAndEventId(guestId, eventId);
+        guest.ifPresent(guests::delete);
+        return guest.isPresent();
+    }
+
     /** The first guest, in list order, who has not been sent the invite yet. */
     @Transactional(readOnly = true)
     public Optional<Guest> nextUnsent(long eventId) {

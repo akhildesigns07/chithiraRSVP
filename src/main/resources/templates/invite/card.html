@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
     <title th:text="|${event.coupleNames} — ${event.eventType.labelEn}|">Invitation</title>
+    <th:block th:if="${ogImage}">
+        <meta property="og:type" content="website">
+        <meta property="og:title" th:content="${ogTitle}">
+        <meta property="og:description" th:content="${ogDescription}">
+        <meta property="og:image" th:content="${ogImage}">
+        <meta property="og:image:type" content="image/jpeg">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" th:content="${ogTitle}">
+        <meta name="twitter:card" content="summary_large_image">
+    </th:block>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Malayalam:wght@400..700&display=swap">

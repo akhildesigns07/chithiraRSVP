@@ -6,6 +6,11 @@ import java.util.List;
 
 public record Totals(int invited, int sent, int attending, int headcount, int notAttending, int pending) {
 
+    /** Guests who have replied either way. */
+    public int responded() {
+        return attending + notAttending;
+    }
+
     public static Totals of(List<Guest> guests) {
         int sent = 0, attending = 0, headcount = 0, notAttending = 0, pending = 0;
         for (Guest g : guests) {

@@ -22,7 +22,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(TOKEN_PAGES).permitAll()
-                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/webjars/**", "/favicon.ico", "/error").permitAll()
+                        .requestMatchers("/", "/og/**", "/css/**", "/js/**", "/img/**", "/webjars/**", "/favicon.ico", "/error").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/portal/login")

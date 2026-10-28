@@ -4,6 +4,8 @@ import com.chithira.rsvp.event.CardTemplate;
 import com.chithira.rsvp.event.Event;
 import com.chithira.rsvp.guest.Guest;
 import com.chithira.rsvp.guest.GuestService;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import org.springframework.ui.Model;
 
 /**
@@ -15,9 +17,16 @@ public final class InviteCardModel {
     private InviteCardModel() {
     }
 
-    public static void forGuest(Model model, Guest guest, boolean hasPhoto, boolean hasLetter) {
+    private static final DateTimeFormatter OG_DATE = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy · h:mm a", Locale.ENGLISH);
+
+    public static void forGuest(Model model, Guest guest, boolean hasPhoto, boolean hasLetter, String ogImageUrl) {
         String base = "/i/" + guest.getToken();
-        common(model, guest, guest.getEvent(), guest.getEvent().getTemplate());
+        Event event = guest.getEvent();
+        common(model, guest, event, event.getTemplate());
+        // Link preview: event-level only. No guest name, so a forwarded preview reveals nothing personal.
+        model.addAttribute("ogTitle", "You're invited: " + event.getCoupleNames());
+        model.addAttribute("ogDescription", OG_DATE.format(event.getStartsAt()) + " · " + event.getVenue());
+        model.addAttribute("ogImage", ogImageUrl);
         model.addAttribute("photoUrl", hasPhoto ? base + "/photo" : null);
         model.addAttribute("letterUrl", hasLetter ? base + "/letter" : null);
         model.addAttribute("rsvpUrl", base + "/rsvp");

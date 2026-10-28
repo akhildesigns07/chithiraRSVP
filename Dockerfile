@@ -8,7 +8,9 @@ COPY src ./src
 RUN mvn -q -B package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
-RUN addgroup -S app && adduser -S app -G app
+# Java2D (share images) needs fontconfig even though the app bundles its own font.
+RUN apk add --no-cache fontconfig ttf-dejavu \
+    && addgroup -S app && adduser -S app -G app
 WORKDIR /app
 COPY --from=build /src/target/app.jar app.jar
 USER app

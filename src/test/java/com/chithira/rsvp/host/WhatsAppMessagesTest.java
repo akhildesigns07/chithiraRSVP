@@ -13,16 +13,38 @@ class WhatsAppMessagesTest {
     private final WhatsAppMessages messages =
             new WhatsAppMessages(new Links(new AppProperties("https://inv.example/", null, null, null)));
 
+    private static Event event() {
+        var event = new Event();
+        event.setMessageEn("We invite you.");
+        event.setMessageMl("സ്വാഗതം");
+        return event;
+    }
+
+    @Test
+    void defaultsGreetByNameAndEndWithTheLink() {
+        assertThat(WhatsAppMessages.defaultTemplate(event(), MessageLanguage.EN)).isEqualTo("Dear {name},\n\nWe invite you.\n\n{link}");
+        assertThat(WhatsAppMessages.defaultTemplate(event(), MessageLanguage.ML)).isEqualTo("പ്രിയപ്പെട്ട {name},\n\nസ്വാഗതം\n\n{link}");
+    }
+
+    @Test
+    void rendersEveryPlaceholderOccurrence() {
+        var guest = new Guest(event(), "Anil", "919876543210");
+        assertThat(messages.render("Hi {name}! {name}, open {link}", guest))
+                .isEqualTo("Hi Anil! Anil, open https://inv.example/i/" + guest.getToken());
+    }
+
+    @Test
+    void templatesMustContainTheLinkAndFit() {
+        assertThat(WhatsAppMessages.problem("Hi {name} {link}")).isEmpty();
+        assertThat(WhatsAppMessages.problem("Hi {name}")).get().asString().contains("{link}");
+        assertThat(WhatsAppMessages.problem("  ")).isPresent();
+        assertThat(WhatsAppMessages.problem(null)).isPresent();
+        assertThat(WhatsAppMessages.problem("{link}" + "x".repeat(1000))).get().asString().contains("too long");
+    }
+
     @Test
     void encodesEverythingThatIsNotUnreserved() {
-        var event = new Event();
-        event.setMessageEn("A+B & C?");
-        event.setMessageMl("സ്വാഗതം");
-        var guest = new Guest(event, "Anil", "919876543210");
-
-        String url = messages.waMeUrl(guest, event);
-
-        assertThat(url).startsWith("https://wa.me/919876543210?text=Dear%20Anil%2C%0A%0AA%2BB%20%26%20C%3F%0A%0A%E0%B4");
-        assertThat(url).endsWith("%0A%0Ahttps%3A%2F%2Finv.example%2Fi%2F" + guest.getToken());
+        String url = WhatsAppMessages.waMeUrl("919876543210", "Dear Anil,\n\nA+B & C? സ https://x/i/t");
+        assertThat(url).isEqualTo("https://wa.me/919876543210?text=Dear%20Anil%2C%0A%0AA%2BB%20%26%20C%3F%20%E0%B4%B8%20https%3A%2F%2Fx%2Fi%2Ft");
     }
 }

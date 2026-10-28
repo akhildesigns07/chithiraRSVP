@@ -300,6 +300,55 @@ class StaffControllerTest {
     }
 
     @Test
+    void removesAGuestAndTheirInvitationLinkStopsWorking() throws Exception {
+        var event = data.event();
+        var anil = data.guest(event, "Anil", "919876543210");
+        var keep = data.guest(event, "Keep", "919876543211");
+
+        mvc.perform(post("/portal/events/{id}/guests/{gid}/delete", event.getId(), anil.getId())
+                        .header("HX-Request", "true").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Guest removed.")))
+                .andExpect(content().string(containsString("Guests <span class=\"muted\">(1)</span>")));
+
+        assertThat(guests.findByEventIdOrderById(event.getId())).extracting(g -> g.getName()).containsExactly("Keep");
+        mvc.perform(get("/i/{t}", anil.getToken())).andExpect(status().isNotFound());
+        mvc.perform(get("/i/{t}", keep.getToken())).andExpect(status().isOk());
+
+        // The same number can be added again afterwards.
+        mvc.perform(post("/portal/events/{id}/guests", event.getId()).param("guests", "Anil, 9876543210").with(csrf()))
+                .andExpect(content().string(containsString("Added 1 guest(s).")));
+    }
+
+    @Test
+    void removingIsScopedToTheEventAndNeedsCsrf() throws Exception {
+        var event = data.event();
+        var other = data.event();
+        var stranger = data.guest(other, "Stranger", "919876543210");
+        var anil = data.guest(event, "Anil", "919876543211");
+
+        mvc.perform(post("/portal/events/{id}/guests/{gid}/delete", event.getId(), stranger.getId()).with(csrf()))
+                .andExpect(status().isNotFound());
+        mvc.perform(post("/portal/events/{id}/guests/{gid}/delete", event.getId(), anil.getId()))
+                .andExpect(status().isForbidden());
+        assertThat(guests.findById(stranger.getId())).isPresent();
+        assertThat(guests.findById(anil.getId())).isPresent();
+
+        mvc.perform(post("/portal/events/{id}/guests/{gid}/delete", event.getId(), anil.getId()).with(csrf()))
+                .andExpect(status().is3xxRedirection());
+        assertThat(guests.findById(anil.getId())).isEmpty();
+    }
+
+    @Test
+    void eventPageOffersRemoveWithConfirmation() throws Exception {
+        var event = data.event();
+        var anil = data.guest(event, "Anil", "919876543210");
+        mvc.perform(get("/portal/events/{id}", event.getId()))
+                .andExpect(content().string(containsString("/portal/events/" + event.getId() + "/guests/" + anil.getId() + "/delete")))
+                .andExpect(content().string(containsString("hx-confirm=\"Remove Anil from the guest list? Their invitation link will stop working.\"")));
+    }
+
+    @Test
     void pastesGuestListWithNormalisedNumbers() throws Exception {
         var event = data.event();
 

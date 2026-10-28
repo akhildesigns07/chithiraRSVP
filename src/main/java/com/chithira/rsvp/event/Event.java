@@ -1,5 +1,6 @@
 package com.chithira.rsvp.event;
 
+import com.chithira.rsvp.util.Slugs;
 import com.chithira.rsvp.util.Tokens;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,6 +28,10 @@ public class Event {
     /** Lookup key for {@link #hostToken}; see {@link Tokens}. */
     @Column(nullable = false, updatable = false)
     private String hostTokenHash = Tokens.hash(hostToken);
+
+    /** Public, unguessable key for the share image (/og/{slug}.jpg). Fixed once created. */
+    @Column(nullable = false, updatable = false)
+    private String ogSlug;
 
     @Column(nullable = false)
     private String coupleNames;
@@ -64,6 +69,14 @@ public class Event {
     void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
+        if (ogSlug == null) {
+            ogSlug = Slugs.forEvent(coupleNames);
+        }
+    }
+
+    /** Marks the event as changed even when only related rows (such as the photo) were edited. */
+    public void touch() {
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
@@ -145,5 +158,13 @@ public class Event {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public String getOgSlug() {
+        return ogSlug;
     }
 }

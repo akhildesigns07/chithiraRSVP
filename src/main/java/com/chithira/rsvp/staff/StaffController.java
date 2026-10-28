@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,8 +28,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 @RequestMapping("/portal")
@@ -144,6 +147,23 @@ public class StaffController {
         model.addAttribute("pasteErrors", result.errors());
         model.addAttribute("pasteText", result.hasErrors() ? text : "");
         model.addAttribute("addedCount", result.guests().size());
+        return "portal/event :: guests";
+    }
+
+    /** htmx (or plain form) endpoint: removes one guest of this event and re-renders the guest section. */
+    @PostMapping("/events/{id}/guests/{guestId}/delete")
+    String removeGuest(@PathVariable long id, @PathVariable long guestId,
+                       @RequestHeader(name = "HX-Request", required = false) String htmx, Model model) {
+        Event event = events.get(id);
+        if (!guests.remove(event.getId(), guestId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        if (htmx == null) {
+            return "redirect:/portal/events/" + id + "#guests";
+        }
+        addDetailModel(id, model);
+        model.addAttribute("pasteText", "");
+        model.addAttribute("removedGuest", true);
         return "portal/event :: guests";
     }
 
