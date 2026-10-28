@@ -15,15 +15,20 @@ public final class FileResponses {
     private FileResponses() {
     }
 
-    public static ResponseEntity<byte[]> photo(Optional<EventPhoto> photo) {
+    /** Guest-facing files live under /i/{token}: personal, so never stored by browsers or Cloudflare. */
+    public static final CacheControl PERSONAL = CacheControl.noStore();
+    /** Staff-only copies: the staff browser may keep them briefly. */
+    public static final CacheControl STAFF = CacheControl.maxAge(Duration.ofMinutes(10)).cachePrivate();
+
+    public static ResponseEntity<byte[]> photo(Optional<EventPhoto> photo, CacheControl cache) {
         return photo
-                .map(p -> ok(p.getContentType()).body(p.getData()))
+                .map(p -> ok(p.getContentType(), cache).body(p.getData()))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    public static ResponseEntity<byte[]> letterPage(Optional<LetterPage> page, boolean download) {
+    public static ResponseEntity<byte[]> letterPage(Optional<LetterPage> page, boolean download, CacheControl cache) {
         return page
-                .map(p -> ok(p.getContentType())
+                .map(p -> ok(p.getContentType(), cache)
                         .header(HttpHeaders.CONTENT_DISPOSITION,
                                 (download ? ContentDisposition.attachment() : ContentDisposition.inline())
                                         .filename(p.getFilename()).build().toString())
@@ -31,10 +36,10 @@ public final class FileResponses {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    private static ResponseEntity.BodyBuilder ok(String contentType) {
+    private static ResponseEntity.BodyBuilder ok(String contentType, CacheControl cache) {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(10)).cachePrivate())
+                .cacheControl(cache)
                 .header("X-Content-Type-Options", "nosniff");
     }
 }

@@ -17,8 +17,11 @@ public record AppProperties(@NotBlank String baseUrl, @Valid @NotNull Admin admi
     public record Admin(@NotBlank String username, @NotBlank String password) {
     }
 
-    /** Requests allowed per client IP per minute; see {@code RsvpRateLimitFilter}. */
-    public record RateLimit(@Positive int rsvpPerMinute) {
+    /**
+     * Requests allowed per client IP per minute; see {@code RsvpRateLimitFilter}. {@code clientIpHeader}
+     * names a header set by a trusted proxy that carries the real client IP (empty: use the remote address).
+     */
+    public record RateLimit(@Positive int rsvpPerMinute, String clientIpHeader) {
     }
 
     /** Print shop details shown on the public homepage. */

@@ -24,7 +24,7 @@ public class OgImageController {
                 .map(jpeg -> ResponseEntity.ok()
                         .contentType(MediaType.IMAGE_JPEG)
                         // The page links it with ?v=<version>, so a changed event gets a new URL.
-                        .cacheControl(CacheControl.maxAge(Duration.ofDays(1)).cachePublic())
+                        .cacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePublic())
                         .header("X-Content-Type-Options", "nosniff")
                         .body(jpeg))
                 .orElseGet(() -> ResponseEntity.notFound().build());

@@ -19,6 +19,33 @@ spring:
       max-request-size: 15MB
   thymeleaf:
     cache: true
+  web:
+    resources:
+      # Static files are served with content-hashed URLs (e.g. /css/app-3f2a….css), so they can be
+      # cached for a week and still update immediately on deploy.
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: /css/**,/js/**
+      cache:
+        cachecontrol:
+          max-age: 7d
+          cache-public: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+    jmx:
+      exposure:
+        exclude: "*"
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: false
 
 server:
   port: ${PORT:8080}
@@ -42,6 +69,8 @@ app:
     password: ${ADMIN_PASSWORD}
   rate-limit:
     rsvp-per-minute: ${RSVP_RATE_LIMIT_PER_MINUTE:10}
+    # Header carrying the real client IP, set by a trusted proxy (prod: CF-Connecting-IP). Empty = remote address.
+    client-ip-header: ${CLIENT_IP_HEADER:}
   shop:
     name: ${SHOP_NAME:Chithira Printer}
     address: ${SHOP_ADDRESS:TD Complex, Chamakkada, Kollam}

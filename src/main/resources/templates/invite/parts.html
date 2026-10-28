@@ -69,8 +69,7 @@
         <form class="rsvp-form" method="post"
               th:action="${rsvpUrl} ? @{${rsvpUrl}} : null"
               th:attr="hx-post=${rsvpUrl} ? @{${rsvpUrl}} : null"
-              hx-target="#rsvp" hx-swap="outerHTML"
-              hx-on::response-error="this.querySelector('.rsvp-busy').hidden = false">
+              hx-target="#rsvp" hx-swap="outerHTML">
             <fieldset class="choices" th:disabled="${rsvpUrl == null}">
                 <legend class="sr-only">Your reply</legend>
                 <label class="choice">

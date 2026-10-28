@@ -63,6 +63,10 @@
     // Runs synchronously before the new tab opens, so a bad message can still stop the send.
     form.addEventListener('submit', function (e) {
         var button = e.submitter;
+        if (button && button.dataset.confirm && !confirm(button.dataset.confirm)) {
+            e.preventDefault();
+            return;
+        }
         if (!button || !button.dataset.id) return; // e.g. "Reset to original"
         var p = templateProblem(activeTextarea().value);
         if (p) {

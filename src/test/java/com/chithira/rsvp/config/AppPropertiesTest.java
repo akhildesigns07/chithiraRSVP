@@ -11,7 +11,7 @@ class AppPropertiesTest {
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     private AppProperties props(String user, String password) {
-        return new AppProperties("https://x", new AppProperties.Admin(user, password), null, new AppProperties.RateLimit(10));
+        return new AppProperties("https://x", new AppProperties.Admin(user, password), null, new AppProperties.RateLimit(10, null));
     }
 
     @Test
@@ -24,7 +24,7 @@ class AppPropertiesTest {
 
     @Test
     void rateLimitMustBePositive() {
-        var p = new AppProperties("https://x", new AppProperties.Admin("a", "b"), null, new AppProperties.RateLimit(0));
+        var p = new AppProperties("https://x", new AppProperties.Admin("a", "b"), null, new AppProperties.RateLimit(0, null));
         assertThat(validator.validate(p)).isNotEmpty();
     }
 }

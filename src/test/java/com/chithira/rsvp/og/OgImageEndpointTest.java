@@ -71,7 +71,7 @@ class OgImageEndpointTest {
         byte[] first = mvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", "image/jpeg"))
-                .andExpect(header().string("Cache-Control", "max-age=86400, public"))
+                .andExpect(header().string("Cache-Control", "max-age=604800, public"))
                 .andReturn().getResponse().getContentAsByteArray();
         var img = ImageIO.read(new ByteArrayInputStream(first));
         assertThat(img.getWidth()).isEqualTo(1200);

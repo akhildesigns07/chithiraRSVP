@@ -121,12 +121,12 @@ public class StaffController {
 
     @GetMapping("/events/{id}/photo")
     ResponseEntity<byte[]> photo(@PathVariable long id) {
-        return FileResponses.photo(events.photo(id));
+        return FileResponses.photo(events.photo(id), FileResponses.STAFF);
     }
 
     @GetMapping("/events/{id}/letter/{page}")
     ResponseEntity<byte[]> letterPage(@PathVariable long id, @PathVariable int page) {
-        return FileResponses.letterPage(events.letterPage(id, page), false);
+        return FileResponses.letterPage(events.letterPage(id, page), false, FileResponses.STAFF);
     }
 
     /** The real invitation card with a sample guest, so staff can show customers each design. */

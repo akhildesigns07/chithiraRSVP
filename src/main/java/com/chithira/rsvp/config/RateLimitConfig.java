@@ -19,8 +19,8 @@ public class RateLimitConfig {
 
     /** Runs before Spring Security so rejected requests do no further work. */
     @Bean
-    FilterRegistrationBean<RsvpRateLimitFilter> rsvpRateLimitFilter(SlidingWindowRateLimiter limiter) {
-        var registration = new FilterRegistrationBean<>(new RsvpRateLimitFilter(limiter));
+    FilterRegistrationBean<RsvpRateLimitFilter> rsvpRateLimitFilter(SlidingWindowRateLimiter limiter, AppProperties props) {
+        var registration = new FilterRegistrationBean<>(new RsvpRateLimitFilter(limiter, props.rateLimit().clientIpHeader()));
         registration.addUrlPatterns("/i/*");
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
         return registration;

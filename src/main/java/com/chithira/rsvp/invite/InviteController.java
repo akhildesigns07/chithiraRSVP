@@ -45,7 +45,7 @@ public class InviteController {
 
     @GetMapping("/photo")
     ResponseEntity<byte[]> photo(@PathVariable String token) {
-        return FileResponses.photo(events.photo(guest(token).getEvent().getId()));
+        return FileResponses.photo(events.photo(guest(token).getEvent().getId()), FileResponses.PERSONAL);
     }
 
     /** The full printed invitation letter: a PDF viewer or the page images, one after another. */
@@ -66,7 +66,7 @@ public class InviteController {
     @GetMapping("/letter/{page}")
     ResponseEntity<byte[]> letterPage(@PathVariable String token, @PathVariable int page,
                                       @RequestParam(defaultValue = "false") boolean download) {
-        return FileResponses.letterPage(events.letterPage(guest(token).getEvent().getId(), page), download);
+        return FileResponses.letterPage(events.letterPage(guest(token).getEvent().getId(), page), download, FileResponses.PERSONAL);
     }
 
     @PostMapping("/rsvp")

@@ -58,7 +58,7 @@
                             hx-target="#composer-status" hx-swap="innerHTML">Save message</button>
                     <button type="submit" class="btn btn-ghost btn-tap" formtarget="_self" formnovalidate
                             th:formaction="@{/h/{t}/composer/reset(t=${event.hostToken})}"
-                            onclick="return confirm('Go back to the original message?')">Reset to original</button>
+                            data-confirm="Go back to the original message?">Reset to original</button>
                     <span id="composer-status" class="small" aria-live="polite">
                         <th:block th:fragment="composer-status">
                             <span th:if="${saved}" class="saved">Saved</span>

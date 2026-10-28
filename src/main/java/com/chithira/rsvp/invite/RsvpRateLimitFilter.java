@@ -12,18 +12,33 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Limits RSVP submissions ({@code POST /i/{token}/rsvp}) per client IP. The client IP is
- * {@code request.getRemoteAddr()}, which Tomcat's RemoteIpValve only rewrites from
- * X-Forwarded-For when the request came through a trusted internal proxy.
+ * Limits RSVP submissions ({@code POST /i/{token}/rsvp}) per client IP.
+ *
+ * <p>The client IP is taken from {@code clientIpHeader} when configured (behind Cloudflare:
+ * {@code CF-Connecting-IP}, which Cloudflare always overwrites), otherwise from
+ * {@code request.getRemoteAddr()}. X-Forwarded-For is never used directly: its first entry is
+ * whatever the client sent.
  */
 public class RsvpRateLimitFilter extends OncePerRequestFilter {
 
     private static final Pattern RSVP_PATH = Pattern.compile("^/i/[^/]+/rsvp/?$");
 
     private final SlidingWindowRateLimiter limiter;
+    private final String clientIpHeader;
 
-    public RsvpRateLimitFilter(SlidingWindowRateLimiter limiter) {
+    public RsvpRateLimitFilter(SlidingWindowRateLimiter limiter, String clientIpHeader) {
         this.limiter = limiter;
+        this.clientIpHeader = clientIpHeader == null || clientIpHeader.isBlank() ? null : clientIpHeader.strip();
+    }
+
+    String clientIp(HttpServletRequest request) {
+        if (clientIpHeader != null) {
+            String value = request.getHeader(clientIpHeader);
+            if (value != null && !value.isBlank()) {
+                return value.strip();
+            }
+        }
+        return request.getRemoteAddr();
     }
 
     @Override
@@ -35,7 +50,7 @@ public class RsvpRateLimitFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        var decision = limiter.hit(request.getRemoteAddr());
+        var decision = limiter.hit(clientIp(request));
         if (decision.allowed()) {
             chain.doFilter(request, response);
             return;
